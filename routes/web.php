@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +14,15 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::resource('books', BookController::class);
+Route::get('/ranking', function () {
+    return 'ランキング画面は未実装です';
+})->name('ranking.index');
+
+Route::get('/favorites', function () {
+    return 'お気に入り画面は未実装です';
+})->name('favorites.index');
+
+Route::get('/genres', function () {
+    return 'ジャンル管理画面は未実装です';
+})->name('genres.index');
