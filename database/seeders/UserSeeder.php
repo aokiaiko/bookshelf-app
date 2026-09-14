@@ -13,36 +13,37 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        $users = [
+            [
+                'name' => '山田太郎',
+                'email' => 'yamada@example.com',
+            ],
+            [
+                'name' => '鈴木花子',
+                'email' => 'suzuki@example.com',
+            ],
+            [
+                'name' => '田中一郎',
+                'email' => 'tanaka@example.com',
+            ],
+            [
+                'name' => '佐藤美咲',
+                'email' => 'sato@example.com',
+            ],
+            [
+                'name' => '高橋健太',
+                'email' => 'takahashi@example.com',
+            ],
+        ];
 
-        User::firstOrCreate([
-            'name' => '山田太郎',
-            'email' => 'yamada@example.com',
-            'password' => Hash::make('password'),
-
-        ]);
-
-        User::firstOrCreate([
-            'name' => '鈴木花子',
-            'email' => 'suzuki@example.com',
-            'password' => Hash::make('password'),
-        ]);
-
-        User::firstOrCreate([
-            'name' => '田中一郎',
-            'email' => 'tanaka@example.com',
-            'password' => Hash::make('password'),
-        ]);
-
-        User::firstOrCreate([
-            'name' => '佐藤美咲',
-            'email' => 'sato@example.com',
-            'password' => Hash::make('password'),
-        ]);
-
-        User::firstOrCreate([
-            'name' => '高橋健太',
-            'email' => 'takahashi@example.com',
-            'password' => Hash::make('password'),
-        ]);
+        foreach ($users as $user){
+          User::firstOrCreate(
+            ['email' => $user['email']],
+            [
+                'name' => $user['name'],
+                'password' => Hash::make('password'),
+            ]
+          );
+        }
     }
 }
