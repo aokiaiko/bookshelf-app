@@ -2,12 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Models\Book;
 use App\Models\Genre;
-
+use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class BookSeeder extends Seeder
 {
@@ -31,7 +29,7 @@ class BookSeeder extends Seeder
                 'author' => 'D・カーネギー',
                 'isbn' => '9784422100524',
                 'published_at' => '1936-10-01',
-                'genre' => ['ビジネス','自己啓発'],
+                'genre' => ['ビジネス', '自己啓発'],
                 'description' => '人間関係の原則について解説した書籍。',
                 'image_url' => 'https://placehold.co/200x300/e2e8f0/475569?text=2',
             ],
@@ -43,14 +41,14 @@ class BookSeeder extends Seeder
                 'genre' => ['技術書'],
                 'description' => 'プログラミングコード記述における実践的な手法をまとめた書籍。',
                 'image_url' => 'https://placehold.co/200x300/e2e8f0/475569?text=3',
-                
+
             ],
             [
                 'title' => '7つの習慣',
                 'author' => 'スティーブン・R・コヴィー',
                 'isbn' => '9784863940246',
                 'published_at' => '2013-08-30',
-                'genre' => ['ビジネス','自己啓発'],
+                'genre' => ['ビジネス', '自己啓発'],
                 'description' => '世界中で読まれ続ける自己啓発本の最高峰とも言える書籍。',
                 'image_url' => 'https://placehold.co/200x300/e2e8f0/475569?text=4',
             ],
@@ -68,7 +66,7 @@ class BookSeeder extends Seeder
                 'author' => 'ユヴァル・ノア・ハラリ',
                 'isbn' => '9784309226712',
                 'published_at' => '2016-09-08',
-                'genre' => ['歴史','科学'],
+                'genre' => ['歴史', '科学'],
                 'description' => '人類の現代に至るプロセスを歴史と科学の視点から描いた世界的名著。',
                 'image_url' => 'https://placehold.co/200x300/e2e8f0/475569?text=6',
             ],
@@ -104,7 +102,7 @@ class BookSeeder extends Seeder
                 'author' => 'ハンス・ロスリング',
                 'isbn' => '9784822289607',
                 'published_at' => '2019-01-11',
-                'genre' => ['ビジネス','科学'],
+                'genre' => ['ビジネス', '科学'],
                 'description' => 'データや事実に基づいて世界を正しくみる習慣を提唱した書籍。',
                 'image_url' => 'https://placehold.co/200x300/e2e8f0/475569?text=10',
             ],
@@ -113,7 +111,7 @@ class BookSeeder extends Seeder
                 'author' => 'マルク・レビンソン',
                 'isbn' => '9784822251468',
                 'published_at' => '2007-01-18',
-                'genre' => ['ビジネス','歴史'],
+                'genre' => ['ビジネス', '歴史'],
                 'description' => '現代社会のインフラの裏側に着目し、世界経済の歴史を描いたビジネスノンフィクション書籍。',
                 'image_url' => 'https://placehold.co/200x300/e2e8f0/475569?text=11',
             ],
@@ -122,7 +120,7 @@ class BookSeeder extends Seeder
         $user = User::first();
 
         foreach ($books as $bookData) {
-              $book = Book::firstOrCreate(
+            $book = Book::firstOrCreate(
                 ['isbn' => $bookData['isbn']],
                 [
                     'user_id' => $user->id,
@@ -132,14 +130,14 @@ class BookSeeder extends Seeder
                     'description' => $bookData['description'],
                     'image_url' => $bookData['image_url'],
                 ]
-              );
+            );
 
             $genreNames = (array) $bookData['genre'];
 
             $genreIds = Genre::whereIn('name', $genreNames)
-                     ->pluck('id');
+                ->pluck('id');
 
             $book->genres()->sync($genreIds);
-        }   
+        }
     }
 }

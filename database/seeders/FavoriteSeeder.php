@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class FavoriteSeeder extends Seeder
 {
@@ -22,9 +21,9 @@ class FavoriteSeeder extends Seeder
         ];
 
         foreach ($favorites as $userId => $bookIds) {
-           $user = User::find($userId);
+            $user = User::find($userId);
 
-           $user->favoriteBooks()->syncWithoutDetaching($bookIds);
+            $user->favoriteBooks()->syncWithoutDetaching($bookIds);
         }
 
     }
