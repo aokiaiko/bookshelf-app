@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GenreRequest;
 use App\Models\Genre;
-use Illuminate\Http\Request;
 
 class GenreController extends Controller
 {
@@ -28,9 +28,15 @@ class GenreController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(GenreRequest $request)
     {
-        //
+        $genre = Genre::create([
+            'name' => $request->name,
+        ]);
+
+        return redirect()
+            ->route('genres.index')
+            ->with('success', 'ジャンルを作成しました。');
     }
 
     /**
