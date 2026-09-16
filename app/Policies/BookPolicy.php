@@ -14,4 +14,12 @@ class BookPolicy
     {
         return $book->user_id === $user->id;
     }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Book $book): bool
+    {
+        return $book->user_id === $user->id;
+    }
 }
