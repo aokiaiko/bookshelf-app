@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\GenreController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,9 +30,7 @@ Route::middleware('auth')->group(function () {
         return 'お気に入り画面は未実装です';
     })->name('favorites.index');
 
-    Route::get('/genres', function () {
-        return 'ジャンル管理画面は未実装です';
-    })->name('genres.index');
+    Route::resource('genres', GenreController::class);
 
     Route::post('/reviews/{review}/like', function () {})->name('reviews.like');
 
