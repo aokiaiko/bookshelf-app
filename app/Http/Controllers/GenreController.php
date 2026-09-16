@@ -36,9 +36,11 @@ class GenreController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Genre $genre)
     {
-        //
+        $books = $genre->books()->paginate(10);
+
+        return view('genres.show', compact('genre', 'books'));
     }
 
     /**
