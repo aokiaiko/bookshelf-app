@@ -60,16 +60,19 @@ class GenreController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(GenreRequest $request, Genre $genre)
     {
-        //
+        $genre->update([
+            'name' => $request->name,
+        ]);
+
+        return redirect()
+            ->route('genres.index', $genre)
+            ->with('success', 'ジャンルを更新しました。');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
-        //
-    }
+    public function destroy(Genre $genre) {}
 }
