@@ -74,5 +74,18 @@ class GenreController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Genre $genre) {}
+    public function destroy(Genre $genre)
+    {
+        if ($genre->books()->exists()) {
+            return redirect()
+                ->route('genres.index')
+                ->with('error', 'このジャンルには書籍が紐付いているため削除できません。');
+        }
+
+        $genre->delete();
+
+        return redirect()
+            ->route('genres.index')
+            ->with('success', 'ジャンルを削除しました。');
+    }
 }
