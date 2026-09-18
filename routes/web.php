@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\GenreController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -42,9 +43,7 @@ Route::middleware('auth')->group(function () {
         return back();
     })->name('favorites.toggle');
 
-    Route::post('/reviews/store/{book}', function () {
-        return back();
-    })->name('reviews.store');
+    Route::post('/reviews/store/{book}', [ReviewController::class, 'store'])->name('reviews.store');
 });
 
 Route::get('books', [BookController::class, 'index'])->name('books.index');
