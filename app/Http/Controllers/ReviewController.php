@@ -21,4 +21,25 @@ class ReviewController extends Controller
             ->route('books.show', $book)
             ->with('success', 'レビューを投稿しました。');
     }
+
+    public function edit(Review $review)
+    {
+        $this->authorize('update', $review);
+
+        return view('reviews.edit', compact('review'));
+    }
+
+    public function update(ReviewRequest $request, Review $review)
+    {
+        $this->authorize('update', $review);
+
+        $review->update([
+            'rating' => $request->rating,
+            'comment' => $request->comment,
+        ]);
+
+        return redirect()
+            ->route('books.show', $review->book)
+            ->with('success', 'レビューを更新しました。');
+    }
 }
