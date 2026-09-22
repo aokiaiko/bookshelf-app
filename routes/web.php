@@ -29,9 +29,7 @@ Route::middleware('auth')->group(function () {
         return 'ランキング画面は未実装です';
     })->name('ranking.index');
 
-    Route::get('/favorites', function () {
-        return 'お気に入り画面は未実装です';
-    })->name('favorites.index');
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::post('/books/{book}/favorites', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
 
     Route::resource('genres', GenreController::class);
