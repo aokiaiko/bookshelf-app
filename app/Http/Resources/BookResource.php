@@ -28,8 +28,16 @@ class BookResource extends JsonResource
                     'name' => $genre->name,
                 ];
             }),
-            'reviews_avg_rating' => $this->reviews_avg_rating,
-            'reviews_count' => $this->reviews_count,
+            'reviews_avg_rating' => $this->whenHas(
+                'reviews_avg_rating',
+                fn () => $this->reviews_avg_rating === null
+                ? null
+                : (float) $this->reviews_avg_rating
+            ),
+            'reviews_count' => $this->whenCounted('reviews'),
+            'reviews' => ReviewResource::collection(
+                $this->whenLoaded('reviews')
+            ),
         ];
     }
 }
