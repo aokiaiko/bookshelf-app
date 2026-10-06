@@ -34,7 +34,6 @@ class BookRequest extends FormRequest
             ],
             'published_date' => ['required', 'date'],
             'genres' => ['required', 'array', 'min:1'],
-            'genres.*' => ['exists:genres,id'],
             'description' => ['nullable'],
             'image_url' => ['nullable', 'url', 'max:255'],
         ];
