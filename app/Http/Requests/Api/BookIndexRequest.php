@@ -43,8 +43,5 @@ class BookIndexRequest extends FormRequest
             'per_page.min' => '1ページあたりの件数は1以上で入力してください。',
             'per_page.max' => '1ページあたりの件数は100以下で入力してください。',
         ];
-    }    
-
-
-    
+    }
 }
