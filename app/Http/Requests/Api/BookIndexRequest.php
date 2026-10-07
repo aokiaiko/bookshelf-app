@@ -37,7 +37,7 @@ class BookIndexRequest extends FormRequest
             'keyword.max' => 'キーワードは255文字以下で入力してください。',
             'genre_id.integer' => 'ジャンルIDは整数で入力してください。',
             'genre_id.exists' => 'そのジャンルIDは存在しません。',
-            'page' => 'ページ番号は整数で入力してください。',
+            'page.integer' => 'ページ番号は整数で入力してください。',
             'page.min' => 'ページ番号は1以上の整数で入力してください。',
             'per_page.integer' => '1ページあたりの件数は整数で入力してください。',
             'per_page.min' => '1ページあたりの件数は1以上で入力してください。',
