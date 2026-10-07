@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class BookStoreRequest extends FormRequest
@@ -17,14 +18,14 @@ class BookStoreRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             'title' => ['required', 'string', 'max:255'],
             'author' => ['required', 'string', 'max:255'],
-            'isbn' => ['required', 'string', 'size:13','unique:books,isbn'],
+            'isbn' => ['required', 'string', 'size:13', 'unique:books,isbn'],
             'published_date' => ['required', 'date'],
             'genres' => ['required', 'array', 'min:1'],
             'description' => ['nullable'],
@@ -48,7 +49,7 @@ class BookStoreRequest extends FormRequest
             'isbn.string' => 'ISBNは文字列で入力してください。',
             'isbn.size' => 'ISBNは13桁で入力してください。',
             'isbn.unique' => 'そのISBNは既に使用されています。',
-            
+
             'genres.required' => 'ジャンルは1つ以上選択してください。',
             'genres.min' => 'ジャンルは1つ以上選択してください。',
 
@@ -61,8 +62,7 @@ class BookStoreRequest extends FormRequest
             'user_id.required' => '登録者IDは必須です。',
             'user_id.integer' => '登録者IDは整数で入力してください。',
             'user_id.exists' => 'そのIDは登録されていません。',
-            
+
         ];
     }
 }
-
