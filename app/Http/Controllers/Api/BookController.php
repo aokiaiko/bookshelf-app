@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\BookIndexRequest;
-use App\Http\Requests\Api\BookStoreRequest;
+use App\Http\Requests\Api\BookRequest;
 use App\Http\Resources\BookResource;
 use App\Models\Book;
-use Illuminate\Http\Request;
 
 class BookController extends Controller
 {
@@ -47,7 +46,7 @@ class BookController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(BookStoreRequest $request)
+    public function store(BookRequest $request)
     {
         $book = Book::create([
             'title' => $request->title,
@@ -81,9 +80,20 @@ class BookController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(BookRequest $request, Book $book)
     {
-        //
+        $book->update([
+            'title' => $request->title,
+            'author' => $request->author,
+            'isbn' => $request->isbn,
+            'published_date' => $request->published_date,
+            'description' => $request->description,
+            'image_url' => $request->image_url,
+        ]);
+
+        $book->genres()->sync($request->genres);
+
+        return new BookResource($book);
     }
 
     /**
