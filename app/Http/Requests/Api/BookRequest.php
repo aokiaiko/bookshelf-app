@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Api;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -36,6 +36,7 @@ class BookRequest extends FormRequest
             'genres' => ['required', 'array', 'min:1'],
             'description' => ['nullable'],
             'image_url' => ['nullable', 'url', 'max:255'],
+            'user_id' => ['required', 'integer', 'exists:users,id'],
         ];
     }
 
@@ -63,6 +64,11 @@ class BookRequest extends FormRequest
 
             'published_date.required' => '出版日は必須です。',
             'published_date.date' => '出版日は有効な日付形式で入力してください。',
+
+            'user_id.required' => '登録者IDは必須です。',
+            'user_id.integer' => '登録者IDは整数で入力してください。',
+            'user_id.exists' => 'そのIDは登録されていません。',
+
         ];
     }
 }
