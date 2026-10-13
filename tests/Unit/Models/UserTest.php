@@ -39,7 +39,7 @@ class UserTest extends TestCase
 
         $this->assertEquals('テスト名', $user->name);
         $this->assertEquals('test@example.com', $user->email);
-        $this->assertNull($user->getAttribute('admin_flag'));
+        $this->assertArrayNotHasKey('admin_flag', $user->getAttributes());
     }
 
     public function test_hidden_attributes_are_not_included_in_array(): void

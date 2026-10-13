@@ -37,7 +37,7 @@ class BookTest extends TestCase
         $this->assertEquals('https://example.com/book.jpg', $book->image_url);
     }
 
-    public function test_unfillable_attributes_cannot_be_mass_assigned(): void
+    public function test_non_fillable_attributes_cannot_be_mass_assigned(): void
     {
         $book = new Book;
 
@@ -47,7 +47,7 @@ class BookTest extends TestCase
         ]);
 
         $this->assertEquals('テスト書籍', $book->title);
-        $this->assertNull($book->getAttribute('admin_flag'));
+        $this->assertArrayNotHasKey('admin_flag', $book->getAttributes());
     }
 
     public function test_published_date_is_cast_to_date(): void
