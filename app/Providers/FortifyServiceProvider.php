@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
+use Laravel\Fortify\Contracts\LogoutResponse;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Requests\LoginRequest as FortifyLoginRequest;
 
@@ -26,6 +27,18 @@ class FortifyServiceProvider extends ServiceProvider
         $this->app->bind(
             FortifyLoginRequest::class,
             LoginRequest::class
+        );
+
+        $this->app->instance(
+            LogoutResponse::class,
+            new class implements LogoutResponse
+            {
+                public function toResponse($request)
+                {
+                    return redirect()->route('login');
+                }
+            }
+
         );
 
     }
