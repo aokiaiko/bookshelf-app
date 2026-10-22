@@ -9,7 +9,6 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class BookTest extends TestCase
@@ -32,7 +31,7 @@ class BookTest extends TestCase
         $this->assertEquals('テスト書籍', $book->title);
         $this->assertEquals('テスト著者', $book->author);
         $this->assertEquals('1234567890123', $book->isbn);
-        $this->assertEquals('2026-10-09', $book->published_date->format('Y-m-d'));
+        $this->assertEquals('2026-10-09', $book->published_date);
         $this->assertEquals('テスト説明', $book->description);
         $this->assertEquals('https://example.com/book.jpg', $book->image_url);
     }
@@ -48,18 +47,6 @@ class BookTest extends TestCase
 
         $this->assertEquals('テスト書籍', $book->title);
         $this->assertArrayNotHasKey('admin_flag', $book->getAttributes());
-    }
-
-    public function test_published_date_is_cast_to_date(): void
-    {
-        $book = new Book;
-
-        $book->published_date = '2026-10-09';
-
-        $this->assertInstanceOf(
-            Carbon::class,
-            $book->published_date
-        );
     }
 
     public function test_book_belongs_to_user(): void
