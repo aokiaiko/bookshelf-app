@@ -67,7 +67,7 @@ class GenreController extends Controller
         ]);
 
         return redirect()
-            ->route('genres.index', $genre)
+            ->route('genres.index')
             ->with('success', 'ジャンルを更新しました。');
     }
 
