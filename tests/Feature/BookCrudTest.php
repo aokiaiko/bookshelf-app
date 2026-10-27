@@ -88,7 +88,7 @@ class BookCrudTest extends TestCase
         $response->assertSee($book->title);
         $response->assertSee($book->author);
         $response->assertSee($book->isbn);
-        $response->assertSee($book->published_date->format('Y-m-d'));
+        $response->assertSee($book->published_date);
         $response->assertSee($book->description);
         $response->assertSee($book->image_url);
 
@@ -132,46 +132,42 @@ class BookCrudTest extends TestCase
         $response->assertSee('登録');
     }
 
-    public function test_book_edit_page_displays_form(): void
-    {
-        $user = User::factory()->create();
-        $genres = Genre::factory()->count(3)->create();
-        $book = Book::factory()->create([
-            'user_id' => $user->id,
-        ]);
+     public function test_book_edit_page_displays_form(): void
+{
+    $user = User::factory()->create();
+    $genres = Genre::factory()->count(3)->create();
 
-        $book->genres()->attach($genres->take(2)->pluck('id'));
+    $book = Book::factory()->create([
+        'user_id' => $user->id,
+        'title' => 'テスト書籍',
+        'author' => 'テスト著者',
+        'isbn' => '1234567890123',
+        'published_date' => '2026-10-01',
+        'description' => 'テスト説明',
+        'image_url' => 'https://example.com/book.jpg',
+    ]);
 
-        $response = $this->actingAs($user)->get(route('books.edit', $book));
+    $book->genres()->attach($genres[0]->id);
 
-        $response->assertStatus(200);
+    $response = $this->actingAs($user)
+        ->get(route('books.edit', $book));
 
-        $response->assertSee('value="'.$book->title.'"', false);
-        $response->assertSee('value="'.$book->author.'"', false);
-        $response->assertSee('value="'.$book->isbn.'"', false);
-        $response->assertSee('value="'.$book->published_date->format('Y-m-d H:i:s').'"', false);
-        $response->assertSee($book->description);
-        $response->assertSee('value="'.$book->image_url.'"', false);
+    $response->assertStatus(200);
 
-        foreach ($genres as $genre) {
-            $response->assertSee(
-                'type="checkbox" name="genres[]" value="'.$genre->id.'"',
-                false
-            );
+    $response->assertSee('value="'.$book->title.'"', false);
+    $response->assertSee('value="'.$book->author.'"', false);
+    $response->assertSee('value="'.$book->isbn.'"', false);
+    $response->assertSee('value="'.$book->published_date.'"', false);
+    $response->assertSee($book->description);
+    $response->assertSee('value="'.$book->image_url.'"', false);
 
-            $response->assertSee($genre->name);
-        }
-
-        foreach ($genres->take(2) as $genre) {
-            $response->assertSee(
-                'value="'.$genre->id.'"',
-                false
-            );
-        }
-
-        $response->assertSee('キャンセル');
-        $response->assertSee('更新');
+    foreach ($genres as $genre) {
+        $response->assertSee($genre->name);
     }
+
+    $response->assertSee('キャンセル');
+    $response->assertSee('更新');
+}
 
     public function test_guest_cannot_store_book(): void
     {
@@ -627,7 +623,7 @@ class BookCrudTest extends TestCase
             $genre->name,
         ]);
 
-        $response->assertSee('書籍を登録しました');
+        $response->assertSee('書籍を登録しました。');
     }
 
     public function test_book_description_is_not_required(): void
@@ -700,6 +696,53 @@ class BookCrudTest extends TestCase
         ]);
     }
 
+    public function test_book_create_preserves_input_after_validation_error(): void
+{
+    $user = User::factory()->create();
+    $genre = Genre::factory()->create();
+
+    $data = [
+        'title' => str_repeat('あ', 256),
+        'author' => 'テスト著者',
+        'isbn' => '1234567890123',
+        'published_date' => '2026-10-01',
+        'description' => 'テスト説明',
+        'image_url' => 'https://example.com/book.jpg',
+        'genres' => [$genre->id],
+    ];
+
+    $response = $this->actingAs($user)
+        ->post(route('books.store'), $data);
+
+    $response->assertRedirect();
+    $response->assertSessionHasErrors(['title']);
+
+    $response->assertSessionHasInput('title', $data['title']);
+    $response->assertSessionHasInput('author', $data['author']);
+    $response->assertSessionHasInput('isbn', $data['isbn']);
+    $response->assertSessionHasInput('published_date', $data['published_date']);
+    $response->assertSessionHasInput('genres', $data['genres']);
+    $response->assertSessionHasInput('description', $data['description']);
+    $response->assertSessionHasInput('image_url', $data['image_url']);
+   
+$response = $this->get(route('books.create'));
+
+$response->assertStatus(200);
+
+$response->assertSee('value="'.$data['title'].'"', false);
+$response->assertSee('value="'.$data['author'].'"', false);
+$response->assertSee('value="'.$data['isbn'].'"', false);
+$response->assertSee('value="'.$data['published_date'].'"', false);
+$response->assertSee(
+    'checked',
+    false
+);
+$response->assertSee($data['description']);
+$response->assertSee('value="'.$data['image_url'].'"', false);
+
+$response->assertSee('タイトルは255文字以内で入力してください。');
+}
+
     public function test_guest_cannot_update_book(): void
     {
         $book = Book::factory()->create();
@@ -750,6 +793,41 @@ class BookCrudTest extends TestCase
             'isbn' => $book->isbn,
         ]);
     }
+
+    public function test_book_owner_can_see_edit_button(): void
+{
+    $user = User::factory()->create();
+
+    $book = Book::factory()->create([
+        'user_id' => $user->id,
+    ]);
+
+    $response = $this->actingAs($user)
+        ->get(route('books.show', $book));
+
+    $response->assertStatus(200);
+
+    $response->assertSee('編集');
+    $response->assertSee(route('books.edit', $book));
+}
+
+public function test_non_owner_cannot_see_edit_button(): void
+{
+    $userA = User::factory()->create();
+    $userB = User::factory()->create();
+
+    $book = Book::factory()->create([
+        'user_id' => $userA->id,
+    ]);
+
+    $response = $this->actingAs($userB)
+        ->get(route('books.show', $book));
+
+    $response->assertStatus(200);
+
+    $response->assertDontSee('編集');
+    $response->assertDontSee(route('books.edit', $book));
+}
 
     #[DataProvider('invalidBookData')]
     public function test_book_update_validation(
@@ -1066,6 +1144,55 @@ class BookCrudTest extends TestCase
         ]);
     }
 
+   public function test_book_update_preserves_input_after_validation_error(): void
+{
+    $user = User::factory()->create();
+    $genre = Genre::factory()->create();
+
+    $book = Book::factory()->create([
+        'user_id' => $user->id,
+    ]);
+
+    $book->genres()->attach($genre->id);
+
+    $data = [
+        'title' => str_repeat('あ', 256),
+        'author' => '更新後の著者',
+        'isbn' => $book->isbn,
+        'published_date' => '2026-10-01',
+        'description' => '更新後の説明',
+        'image_url' => 'https://example.com/book.jpg',
+        'genres' => [$genre->id],
+    ];
+
+    $response = $this->actingAs($user)
+        ->put(route('books.update', $book), $data);
+
+    $response->assertRedirect();
+    $response->assertSessionHasErrors(['title']);
+
+    $response->assertSessionHasInput('title', $data['title']);
+    $response->assertSessionHasInput('author', $data['author']);
+    $response->assertSessionHasInput('isbn', $data['isbn']);
+    $response->assertSessionHasInput('published_date', $data['published_date']);
+    $response->assertSessionHasInput('description', $data['description']);
+    $response->assertSessionHasInput('image_url', $data['image_url']);
+    $response->assertSessionHasInput('genres', $data['genres']);
+
+    $response = $this->get(route('books.edit', $book));
+
+    $response->assertStatus(200);
+
+    $response->assertSee('value="'.$data['title'].'"', false);
+    $response->assertSee('value="'.$data['author'].'"', false);
+    $response->assertSee('value="'.$data['isbn'].'"', false);
+    $response->assertSee('value="'.$data['published_date'].'"', false);
+    $response->assertSee($data['description']);
+    $response->assertSee('value="'.$data['image_url'].'"', false);
+
+    $response->assertSee('タイトルは255文字以内で入力してください。');
+}
+
     public function test_guest_cannot_delete_book(): void
     {
         $book = Book::factory()->create();
@@ -1095,6 +1222,47 @@ class BookCrudTest extends TestCase
             'id' => $book->id,
         ]);
     }
+
+    public function test_book_owner_can_see_delete_button(): void
+{
+    $user = User::factory()->create();
+
+    $book = Book::factory()->create([
+        'user_id' => $user->id,
+    ]);
+
+    $response = $this->actingAs($user)
+        ->get(route('books.show', $book));
+
+    $response->assertStatus(200);
+
+    $response->assertSee('削除');
+     $response->assertSee(
+    'action="'.route('books.destroy', $book).'"',
+    false
+);
+}
+
+public function test_non_owner_cannot_see_delete_button(): void
+{
+    $userA = User::factory()->create();
+    $userB = User::factory()->create();
+
+    $book = Book::factory()->create([
+        'user_id' => $userA->id,
+    ]);
+
+    $response = $this->actingAs($userB)
+        ->get(route('books.show', $book));
+
+    $response->assertStatus(200);
+
+    $response->assertDontSee('削除');
+    $response->assertDontSee(
+    'action="'.route('books.destroy', $book).'"',
+    false
+);
+}
 
     public function test_delete_book(): void
     {
