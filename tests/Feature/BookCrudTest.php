@@ -623,7 +623,7 @@ class BookCrudTest extends TestCase
             $genre->name,
         ]);
 
-        $response->assertSee('書籍を登録しました');
+        $response->assertSee('書籍を登録しました。');
     }
 
     public function test_book_description_is_not_required(): void

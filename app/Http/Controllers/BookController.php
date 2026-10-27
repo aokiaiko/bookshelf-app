@@ -47,7 +47,7 @@ class BookController extends Controller
 
         return redirect()
             ->route('books.show', $book)
-            ->with('success', '書籍を登録しました');
+            ->with('success', '書籍を登録しました。');
     }
 
     /**
