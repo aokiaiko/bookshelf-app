@@ -291,6 +291,25 @@ class AuthTest extends TestCase
         $response->assertRedirect(route('books.index'));
     }
 
+    public function test_register_input_values_are_preserved_after_validation_error(): void
+    {
+        $response = $this->from(route('register'))->post(route('register'), [
+            'name' => 'テストユーザー',
+            'email' => 'test@example.com',
+            'password' => '123',
+            'password_confirmation' => '123',
+        ]);
+
+        $response->assertRedirect(route('register'));
+        $response->assertSessionHasErrors('password');
+
+        $response->assertSessionHasInput('name', 'テストユーザー');
+        $response->assertSessionHasInput('email', 'test@example.com');
+
+        $response->assertSessionMissing('_old_input.password');
+        $response->assertSessionMissing('_old_input.password_confirmation');
+    }
+
     public function test_login_page_displays_form(): void
     {
         $response = $this->get(route('login'));
@@ -420,5 +439,28 @@ class AuthTest extends TestCase
         $response->assertRedirect(route('login'));
 
         $this->assertGuest();
+    }
+
+    public function test_login_input_values_are_preserved_after_authentication_error(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'test@example.com',
+        ]);
+
+        $response = $this->from(route('login'))->post(route('login'), [
+            'email' => $user->email,
+            'password' => 'wrongpassword',
+        ]);
+
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHasErrors();
+
+        $response->assertSessionHasInput('email', $user->email);
+        $response->assertSessionMissing('_old_input.password');
+
+        $response = $this->get(route('login'));
+
+        $response->assertOk();
+        $response->assertSee('value="'.$user->email.'"', false);
     }
 }
