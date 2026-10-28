@@ -39,7 +39,7 @@ class GenreRequest extends FormRequest
             'name.required' => 'ジャンル名は必須です。',
             'name.string' => 'ジャンル名は文字列で入力してください。',
             'name.max' => 'ジャンル名は255文字以内で入力してください。',
-            'name.unique' => 'そのジャンル名はすでに使用されています。',
+            'name.unique' => 'そのジャンル名は既に使用されています。',
         ];
     }
 }
