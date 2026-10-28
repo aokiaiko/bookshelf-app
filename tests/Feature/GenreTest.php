@@ -59,7 +59,8 @@ class GenreTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewHas('books', function ($books) {
-            return $books->count() === 10;
+            return $books->count() === 10
+            && $books->perPage() === 10;
         });
         $response->assertSee($genre->name);
 
