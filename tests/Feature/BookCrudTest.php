@@ -28,7 +28,8 @@ class BookCrudTest extends TestCase
         $response = $this->get(route('books.index'));
 
         $response->assertViewHas('books', function ($books) {
-            return $books->count() === 10;
+            return $books->count() === 10
+            && $books->perPage() === 10;
         });
 
         $pageBooks = $response->viewData('books');
