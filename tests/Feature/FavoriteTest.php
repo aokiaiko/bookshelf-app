@@ -162,4 +162,14 @@ class FavoriteTest extends TestCase
         $response->assertSee($bookA->title);
         $response->assertDontSee($bookB->title);
     }
+
+    public function test_favorites_returns_404_when_book_does_not_exist(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)
+            ->post(route('favorites.toggle', 99999));
+
+        $response->assertNotFound();
+    }
 }

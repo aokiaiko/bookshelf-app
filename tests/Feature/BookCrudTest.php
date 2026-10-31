@@ -1194,6 +1194,17 @@ class BookCrudTest extends TestCase
         $response->assertSee('タイトルは255文字以内で入力してください。');
     }
 
+    public function test_book_update_returns_404_when_book_does_not_exist(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->put(route('books.update', 99999));
+
+        $response->assertNotFound();
+    }
+
     public function test_guest_cannot_delete_book(): void
     {
         $book = Book::factory()->create();
@@ -1338,5 +1349,16 @@ class BookCrudTest extends TestCase
             'genre_id' => $genre->id,
 
         ]);
+    }
+
+    public function test_book_destroy_returns_404_when_book_does_not_exist(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->delete(route('books.destroy', 99999));
+
+        $response->assertNotFound();
     }
 }
