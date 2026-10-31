@@ -411,6 +411,17 @@ class GenreTest extends TestCase
             ->assertSee('ジャンルを更新しました。');
     }
 
+    public function test_genre_update_returns_404_when_genre_does_not_exist(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->put(route('genres.update', 99999));
+
+        $response->assertNotFound();
+    }
+
     public function test_guest_cannot_delete_genre(): void
     {
         $genre = Genre::factory()->create([

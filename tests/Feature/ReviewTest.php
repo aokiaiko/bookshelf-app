@@ -481,6 +481,17 @@ class ReviewTest extends TestCase
         $response->assertSee('レビューを更新しました。');
     }
 
+    public function test_review_update_returns_404_when_review_does_not_exist(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->put(route('reviews.update', 99999));
+
+        $response->assertNotFound();
+    }
+
     public function test_guest_cannot_delete_review(): void
     {
         $review = Review::factory()->create([
@@ -580,6 +591,17 @@ class ReviewTest extends TestCase
             'id' => $review->id,
             'user_id' => $userA->id,
         ]);
+    }
+
+    public function test_review_destroy_returns_404_when_review_does_not_exist(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->delete(route('reviews.destroy', 99999));
+
+        $response->assertNotFound();
     }
 
     public function test_review_delete_displays_success_message(): void

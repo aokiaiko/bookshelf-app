@@ -81,4 +81,14 @@ class ReviewLikeTest extends TestCase
         $response->assertSee('いいね (0)');
         $response->assertSee('text-gray-500 hover:text-blue-500', false);
     }
+
+    public function test_review_liked_returns_404_when_review_does_not_exist(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)
+            ->post(route('reviews.like', 99999));
+
+        $response->assertNotFound();
+    }
 }
