@@ -2,13 +2,14 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ReviewRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * リクエストを許可するか判定
+     *
+     * @return bool リクエストの許可結果
      */
     public function authorize(): bool
     {
@@ -16,9 +17,9 @@ class ReviewRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * バリデーションルールを定義
      *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array バリデーションルールの配列
      */
     public function rules(): array
     {
@@ -28,7 +29,12 @@ class ReviewRequest extends FormRequest
         ];
     }
 
-    public function messages()
+    /**
+     * バリデーションエラーメッセージを定義
+     *
+     * @return array バリデーションエラーメッセージの配列
+     */
+    public function messages(): array
     {
         return [
             'rating.required' => '評価は必須です。',

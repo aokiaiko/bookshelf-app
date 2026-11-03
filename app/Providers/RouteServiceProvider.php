@@ -20,7 +20,7 @@ class RouteServiceProvider extends ServiceProvider
     public const HOME = '/books';
 
     /**
-     * Define your route model bindings, pattern filters, and other route configuration.
+     *APIのアクセス回数制限とルートの登録を設定
      */
     public function boot(): void
     {
