@@ -20,7 +20,7 @@ use Laravel\Fortify\Http\Requests\LoginRequest as FortifyLoginRequest;
 class FortifyServiceProvider extends ServiceProvider
 {
     /**
-     * Register any application services.
+     * Fortifyのログインリクエストとログアウト処理を登録
      */
     public function register(): void
     {
@@ -33,6 +33,9 @@ class FortifyServiceProvider extends ServiceProvider
             LogoutResponse::class,
             new class implements LogoutResponse
             {
+                /**
+                 * ログアウト後にログイン画面へリダイレクト
+                 */
                 public function toResponse($request)
                 {
                     return redirect()->route('login');
@@ -44,7 +47,7 @@ class FortifyServiceProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap any application services.
+     * Fortifyの認証処理を設定
      */
     public function boot(): void
     {

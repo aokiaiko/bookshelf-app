@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Review extends Model
 {
@@ -13,17 +15,32 @@ class Review extends Model
         'user_id', 'book_id', 'rating', 'comment',
     ];
 
-    public function user()
+    /**
+     * レビューとユーザーのリレーションを定義
+     *
+     * @return BelongsTo レビューーに紐づくユーザーとのリレーション
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function book()
+    /**
+     * レビューと書籍のリレーションを定義
+     *
+     * @return BelongsTo レビューに紐づく書籍とのリレーション
+     */
+    public function book(): BelongsTo
     {
         return $this->belongsTo(Book::class);
     }
 
-    public function likedByUsers()
+    /**
+     * レビューといいねしたユーザーのリレーションを定義
+     *
+     * @return BelongsToMany レビューにいいねしたユーザーとのリレーション
+     */
+    public function likedByUsers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'review_likes');
     }

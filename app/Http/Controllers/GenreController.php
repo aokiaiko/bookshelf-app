@@ -4,13 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\GenreRequest;
 use App\Models\Genre;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class GenreController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * ジャンル一覧を表示
+     *
+     * @return View ジャンル一覧画面
      */
-    public function index()
+    public function index(): View
     {
         $genres = Genre::withCount('books')->get();
 
@@ -18,17 +22,22 @@ class GenreController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * ジャンル登録画面を表示
+     *
+     * @return View ジャンル登録画面
      */
-    public function create()
+    public function create(): View
     {
         return view('genres.create');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * ジャンル登録処理
+     *
+     * @param  GenreRequest  $request  ジャンル登録情報
+     * @return RedirectResponse ジャンル一覧画面へのリダイレクト
      */
-    public function store(GenreRequest $request)
+    public function store(GenreRequest $request): RedirectResponse
     {
         $genre = Genre::create([
             'name' => $request->name,
@@ -40,9 +49,12 @@ class GenreController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * ジャンル詳細を表示
+     *
+     * @param  Genre  $genre  表示対象のジャンル
+     * @return View ジャンル一覧画面
      */
-    public function show(Genre $genre)
+    public function show(Genre $genre): View
     {
         $books = $genre->books()->paginate(10);
 
@@ -50,17 +62,24 @@ class GenreController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * ジャンル編集画面を表示
+     *
+     * @param  Genre  $genre  編集対象のジャンル
+     * @return View ジャンル編集画面
      */
-    public function edit(Genre $genre)
+    public function edit(Genre $genre): View
     {
         return view('genres.edit', compact('genre'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * ジャンル更新処理
+     *
+     * @param  GenreRequest  $request  ジャンル更新情報
+     * @param  Genre  $genre  更新対象のジャンル
+     * @return RedirectResponse ジャンル一覧画面へのリダイレクト
      */
-    public function update(GenreRequest $request, Genre $genre)
+    public function update(GenreRequest $request, Genre $genre): RedirectResponse
     {
         $genre->update([
             'name' => $request->name,
@@ -72,9 +91,12 @@ class GenreController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * ジャンル削除処理
+     *
+     * @param  Genre  $genre  削除対象のジャンル
+     * @return RedirectResponse ジャンル一覧画面へのリダイレクト
      */
-    public function destroy(Genre $genre)
+    public function destroy(Genre $genre): RedirectResponse
     {
         if ($genre->books()->exists()) {
             return redirect()

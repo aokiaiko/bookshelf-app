@@ -7,13 +7,16 @@ use App\Http\Requests\Api\BookIndexRequest;
 use App\Http\Requests\Api\BookRequest;
 use App\Http\Resources\BookResource;
 use App\Models\Book;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class BookController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * 書籍一覧を取得
      */
-    public function index(BookIndexRequest $request)
+    public function index(BookIndexRequest $request): AnonymousResourceCollection
     {
         $bookQuery = Book::with('genres')
             ->withAvg('reviews', 'rating')
@@ -44,9 +47,9 @@ class BookController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * 書籍登録処理
      */
-    public function store(BookRequest $request)
+    public function store(BookRequest $request): JsonResponse
     {
         $book = Book::create([
             'title' => $request->title,
@@ -68,9 +71,9 @@ class BookController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * 書籍詳細を取得
      */
-    public function show(Book $book)
+    public function show(Book $book): BookResource
     {
         $book->load(['genres', 'reviews.user']);
 
@@ -78,9 +81,9 @@ class BookController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * 書籍更新処理
      */
-    public function update(BookRequest $request, Book $book)
+    public function update(BookRequest $request, Book $book): BookResource
     {
         $book->update([
             'title' => $request->title,
@@ -97,9 +100,9 @@ class BookController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * 書籍削除処理
      */
-    public function destroy(Book $book)
+    public function destroy(Book $book): Response
     {
         $book->delete();
 
