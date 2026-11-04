@@ -33,7 +33,7 @@ class BookRequest extends FormRequest
                 'required', 'string', 'size:13',
                 Rule::unique('books', 'isbn')->ignore($book?->id),
             ],
-            'published_date' => ['required', 'date'],
+            'published_date' => ['nullable', 'date'],
             'genres' => ['required', 'array', 'min:1'],
             'description' => ['nullable'],
             'image_url' => ['nullable', 'url', 'max:255'],
@@ -67,7 +67,6 @@ class BookRequest extends FormRequest
             'image_url.url' => '画像URLは有効なURL形式で入力してください。',
             'image_url.max' => '画像URLは255文字以内で入力してください。',
 
-            'published_date.required' => '出版日は必須です。',
             'published_date.date' => '出版日は有効な日付形式で入力してください。',
         ];
     }
