@@ -117,13 +117,13 @@ class BookSeeder extends Seeder
             ],
         ];
 
-        $user = User::first();
+        $users = User::all();
 
         foreach ($books as $bookData) {
             $book = Book::firstOrCreate(
                 ['isbn' => $bookData['isbn']],
                 [
-                    'user_id' => $user->id,
+                    'user_id' => $users->random()->id,
                     'title' => $bookData['title'],
                     'author' => $bookData['author'],
                     'published_date' => $bookData['published_date'],
