@@ -3,7 +3,10 @@
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GenreController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RankingController;
+use App\Http\Controllers\ReadingPlanController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReviewLikeController;
 use Illuminate\Support\Facades\Route;
@@ -36,8 +39,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
     Route::put('/reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
     Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::post('/books/{book}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 
-    Route::post('/books//{book}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::get('/reading-plans', [ReadingPlanController::class, 'index'])->name('reading-plans.index');
+
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+
 });
 
 Route::get('books', [BookController::class, 'index'])->name('books.index');
