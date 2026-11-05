@@ -6,6 +6,7 @@ use App\Http\Requests\BookRequest;
 use App\Models\Book;
 use App\Models\Genre;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class BookController extends Controller
@@ -13,13 +14,54 @@ class BookController extends Controller
     /**
      * 書籍一覧を表示
      *
+     * @param  Request  $request  検索条件
      * @return View 書籍一覧画面
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $books = Book::paginate(10);
+        $bookQuery = Book::query();
 
-        return view('books.index', compact('books'));
+        $keyword = $request->input('keyword');
+        if ($keyword) {
+            $bookQuery->where(function ($bookSearchQuery) use ($keyword) {
+                $bookSearchQuery->where('title', 'like', "%{$keyword}%")
+                    ->orWhere('author', 'like', "%{$keyword}%");
+            });
+        }
+
+        $genreId = $request->input('genre');
+        if ($genreId) {
+            $bookQuery->whereHas('genres', function ($genreQuery) use ($genreId) {
+                $genreQuery->where('genres.id', $genreId);
+            });
+        }
+
+        $sort = $request->input('sort', 'newest');
+
+        switch ($sort) {
+            case 'oldest':
+                $bookQuery->orderBy('created_at', 'asc');
+                break;
+
+            case 'title':
+                $bookQuery->orderBy('title', 'asc');
+                break;
+
+            case 'rating':
+                $bookQuery->withAvg('reviews', 'rating')
+                    ->orderByRaw('reviews_avg_rating IS NULL ASC')
+                    ->orderByDesc('reviews_avg_rating');
+                break;
+
+            default:
+                $bookQuery->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $genres = Genre::all();
+        $books = $bookQuery->paginate(10)->withQueryString();
+
+        return view('books.index', compact('books', 'genres'));
     }
 
     /**
