@@ -512,31 +512,6 @@ class BookCrudTest extends TestCase
         ]);
     }
 
-    public function test_book_published_date_is_required(): void
-    {
-        $user = User::factory()->create();
-        $genre = Genre::factory()->create();
-
-        $data = [
-            'title' => 'テスト本',
-            'author' => 'テスト著者',
-            'isbn' => '1234567890123',
-            'published_date' => '',
-            'genres' => [$genre->id],
-        ];
-
-        $response = $this->actingAs($user)
-            ->post(route('books.store'), $data);
-
-        $response->assertSessionHasErrors([
-            'published_date' => '出版日は必須です。',
-        ]);
-
-        $this->assertDatabaseMissing('books', [
-            'isbn' => '1234567890123',
-        ]);
-    }
-
     public function test_book_published_date_has_invalid_format(): void
     {
         $user = User::factory()->create();
@@ -670,6 +645,28 @@ class BookCrudTest extends TestCase
         $this->assertDatabaseHas('books', [
             'isbn' => '1234567890123',
             'image_url' => null,
+        ]);
+    }
+
+    public function test_book_published_date_is_not_required(): void
+    {
+        $user = User::factory()->create();
+        $genre = Genre::factory()->create();
+
+        $data = [
+            'title' => 'テスト本',
+            'author' => 'テスト著者',
+            'isbn' => '1234567890123',
+            'published_date' => '',
+            'genres' => [$genre->id],
+        ];
+
+        $response = $this->actingAs($user)
+            ->post(route('books.store'), $data);
+
+        $this->assertDatabaseHas('books', [
+            'isbn' => '1234567890123',
+            'published_date' => null,
         ]);
     }
 
@@ -904,7 +901,6 @@ class BookCrudTest extends TestCase
             '画像URL有効なURL以外' => ['image_url',  '111111', '画像URLは有効なURL形式で入力してください。'],
             '画像URL256文字' => ['image_url', 'https://example.com/'.str_repeat('a', 236), '画像URLは255文字以内で入力してください。'],
 
-            '出版日未入力' => ['published_date', '', '出版日は必須です。'],
             '出版日有効な日付以外' => ['published_date',  'invalid-date', '出版日は有効な日付形式で入力してください。'],
 
         ];
@@ -1004,7 +1000,6 @@ class BookCrudTest extends TestCase
             'title' => 'テスト本',
             'author' => 'テスト著者',
             'isbn' => '1234567890123',
-            'published_date' => '2026-01-01',
             'genres' => [$genre->id],
             'description' => '',
         ];
@@ -1031,7 +1026,6 @@ class BookCrudTest extends TestCase
             'title' => 'テスト本',
             'author' => 'テスト著者',
             'isbn' => '1234567890123',
-            'published_date' => '2026-01-01',
             'genres' => [$genre->id],
             'image_url' => '',
         ];
@@ -1042,6 +1036,32 @@ class BookCrudTest extends TestCase
         $this->assertDatabaseHas('books', [
             'id' => $book->id,
             'image_url' => null,
+        ]);
+    }
+
+    public function test_update_book_published_date_is_not_required(): void
+    {
+        $user = User::factory()->create();
+        $genre = Genre::factory()->create();
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+            'published_date' => '2026-11-01',
+        ]);
+
+        $data = [
+            'title' => 'テスト本',
+            'author' => 'テスト著者',
+            'isbn' => '1234567890123',
+            'genres' => [$genre->id],
+            'published_date' => '',
+        ];
+
+        $response = $this->actingAs($user)
+            ->put(route('books.update', $book), $data);
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+            'published_date' => null,
         ]);
     }
 
@@ -1060,7 +1080,6 @@ class BookCrudTest extends TestCase
             'title' => 'テスト本',
             'author' => 'テスト著者',
             'isbn' => '1234567890123',
-            'published_date' => '2026-01-01',
             'genres' => 'テストジャンル',
         ];
 
@@ -1098,7 +1117,6 @@ class BookCrudTest extends TestCase
             'title' => 'テスト本',
             'author' => 'テスト著者',
             'isbn' => $otherBook->isbn,
-            'published_date' => '2026-01-02',
             'genres' => [$genre->id],
         ];
 
@@ -1128,7 +1146,6 @@ class BookCrudTest extends TestCase
             'title' => 'テスト本',
             'author' => 'テスト著者',
             'isbn' => $book->isbn,
-            'published_date' => '2026-01-01',
             'genres' => [$genre->id],
         ];
 
