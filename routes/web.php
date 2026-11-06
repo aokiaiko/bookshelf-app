@@ -3,6 +3,7 @@
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GenreController;
+use App\Http\Controllers\GoogleBooksController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\ReadingPlanController;
@@ -40,6 +41,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
     Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
     Route::post('/books/{book}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+
+    Route::get('/books/isbn/{isbn}', [GoogleBooksController::class, 'search'])->name('books.isbn.search');
 
     Route::get('/reading-plans', [ReadingPlanController::class, 'index'])->name('reading-plans.index');
 
