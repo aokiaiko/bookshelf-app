@@ -21,10 +21,9 @@ class GoogleBooksController extends Controller
         $validator = Validator::make(
             ['isbn' => $isbn],
             [
-                'isbn' => ['string', 'size:13'],
+                'isbn' => ['size:13'],
             ],
             [
-                'isbn.string' => 'ISBNは文字列で入力してください。',
                 'isbn.size' => 'ISBNは13桁で入力してください。',
             ]
         );
@@ -47,12 +46,18 @@ class GoogleBooksController extends Controller
 
         } catch (ConnectionException $e) {
             return response()->json([
-                'error' => '書籍情報を取得できませんでした。',
+                'error' => 'API通信エラーが発生しました。',
             ], 504);
 
         } catch (RequestException $e) {
+            if ($e->response->status() === 429) {
+                return response()->json([
+                    'error' => 'Google Books API のクォータを超過しました。.env に GOOGLE_BOOKS_API_KEY を設定してください。',
+                ], 429);
+            }
+
             return response()->json([
-                'error' => '書籍情報を取得できませんでした。',
+                'error' => 'API通信エラーが発生しました。',
             ], 502);
         }
     }

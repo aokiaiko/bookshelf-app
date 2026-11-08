@@ -14,7 +14,10 @@ class GoogleBooksService
     {
         $response = Http::timeout(10)->get(
             'https://www.googleapis.com/books/v1/volumes',
-            ['q' => 'isbn:'.$isbn]
+            [
+                'q' => 'isbn:'.$isbn,
+                'key' => config('services.google_books.key'),
+            ]
         );
 
         $response->throw();
@@ -23,8 +26,7 @@ class GoogleBooksService
 
         if (empty($data['items'])) {
             throw new RuntimeException(
-                '該当する書籍が見つかりませんでした。',
-                404
+                '書籍が見つかりませんでした。'
             );
         }
 
