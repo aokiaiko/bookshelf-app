@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ReadingPlanRequest;
+use App\Models\Book;
+use App\Models\ReadingPlan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,7 +43,9 @@ class ReadingPlanController extends Controller
      */
     public function create(): View
     {
-        return view('reading-plans.create');
+        $books = Book::all();
+
+        return view('reading-plans.create', compact('books'));
 
     }
 
@@ -50,9 +55,17 @@ class ReadingPlanController extends Controller
      * @param  Request  $request  読書計画作成情報
      * @return RedirectResponse 読書計画一覧画面へのリダイレクト
      */
-    public function store(Request $request): RedirectResponse
+    public function store(ReadingPlanRequest $request): RedirectResponse
     {
-        return redirect()->route('reading-plans.index');
+        ReadingPlan::create([
+            'user_id' => auth()->id(),
+            'book_id' => $request->book_id,
+            'target_date' => $request->target_date,
+        ]);
+
+        return redirect()
+            ->route('reading-plans.index')
+            ->with('success', '読書計画を作成しました。');
     }
 
     /**
