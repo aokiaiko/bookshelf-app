@@ -11,6 +11,12 @@ class ReadingPlan extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'target_date' => 'date',
+        'completed_at' => 'datetime',
+        'status' => ReadingPlanStatus::class,
+    ];
+
     protected $fillable = [
         'user_id', 'book_id', 'target_date', 'completed_at', 'status',
     ];
@@ -33,19 +39,5 @@ class ReadingPlan extends Model
     public function book(): BelongsTo
     {
         return $this->BelongsTo(Book::class);
-    }
-
-    /**
-     * 読書計画の属性のキャストを定義
-     *
-     * @return array<string, string> 属性とキャストの対応
-     */
-    protected function casts(): array
-    {
-        return [
-            'target_date' => 'date',
-            'completed_at' => 'datetime',
-            'status' => ReadingPlanStatus::class,
-        ];
     }
 }
