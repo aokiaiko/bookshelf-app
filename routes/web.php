@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/reading-plans', [ReadingPlanController::class, 'store'])->name('reading-plans.store');
     Route::patch('/reading-plans/{plan}/complete', [ReadingPlanController::class, 'complete'])->name('reading-plans.complete');
     Route::get('/reading-plans/{plan}/edit', [ReadingPlanController::class, 'edit'])->name('reading-plans.edit');
+    Route::put('/reading-plans/{readingPlan}', [ReadingPlanController::class, 'update'])->name('reading-plans.update');
     Route::delete('/reading-plans/{plan}', [ReadingPlanController::class, 'destroy'])->name('reading-plans.destroy');
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
