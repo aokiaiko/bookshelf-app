@@ -23,15 +23,15 @@ class ReadingPlanPolicy
     }
 
     /**
-     * 書籍の削除権限を判定
+     * 読書計画の削除権限を判定
      *
      * @param  User  $user  認可対象のユーザー
-     * @param  ReadingPlan  $readingPlan  削除対象の読書計画
+     * @param  ReadingPlan  $plan  削除対象の読書計画
      * @return bool 削除を許可する場合はtrue、それ以外はfalse
      */
-    public function delete(User $user, ReadingPlan $readingPlan): bool
+    public function delete(User $user, ReadingPlan $plan): bool
     {
-        return $readingPlan->user_id === $user->id;
+        return $plan->user_id === $user->id;
     }
 
     /**

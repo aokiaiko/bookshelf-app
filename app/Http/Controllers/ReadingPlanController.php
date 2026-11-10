@@ -127,13 +127,17 @@ class ReadingPlanController extends Controller
     /**
      * 読書計画削除処理
      *
-     * @param  Request  $request  読書計画削除情報
+     * @param  ReadingPlan $plan  削除対象の読書計画
      * @return RedirectResponse 読書計画一覧画面へのリダイレクト
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(ReadingPlan $plan): RedirectResponse
     {
-        return redirect()
-            ->route('reading-plans.index');
+        $this->authorize('delete', $plan);
 
+        $plan->delete();
+
+        return redirect()
+            ->route('reading-plans.index')
+            ->with('success', '読書計画を削除しました。');
     }
 }
