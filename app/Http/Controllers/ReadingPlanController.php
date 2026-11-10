@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ReadingPlanStatus;
 use App\Http\Requests\StoreReadingPlanRequest;
 use App\Http\Requests\UpdateReadingPlanRequest;
 use App\Models\Book;
@@ -70,13 +71,20 @@ class ReadingPlanController extends Controller
     }
 
     /**
-     * 読書計画完読処理
+     * 読書計画完了処理
      *
-     * @param  Request  $request  読書計画登録情報
+     * @param  ReadingPlan  $plan  完了対象の読書計画
      * @return RedirectResponse 読書計画一覧画面へのリダイレクト
      */
-    public function complete(Request $request): RedirectResponse
+    public function complete(ReadingPlan $plan): RedirectResponse
     {
+        $this->authorize('complete', $plan);
+
+        $plan->update([
+            'status' => ReadingPlanStatus::Completed,
+            'completed_at' => now(),
+        ]);
+
         return redirect()
             ->route('reading-plans.index');
 
