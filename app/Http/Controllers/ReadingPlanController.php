@@ -127,7 +127,7 @@ class ReadingPlanController extends Controller
     /**
      * 読書計画削除処理
      *
-     * @param  ReadingPlan $plan  削除対象の読書計画
+     * @param  ReadingPlan  $plan  削除対象の読書計画
      * @return RedirectResponse 読書計画一覧画面へのリダイレクト
      */
     public function destroy(ReadingPlan $plan): RedirectResponse
