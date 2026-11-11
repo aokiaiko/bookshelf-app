@@ -15,6 +15,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:update-overdue-reading-plans')
             ->dailyAt('20:00')
             ->timezone('Asia/Tokyo');
+
+        $schedule->command('app:send-reading-plan-reminders')
+            ->dailyAt('20:00')
+            ->timezone('Asia/Tokyo');
     }
 
     /**

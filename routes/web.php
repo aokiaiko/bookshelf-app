@@ -55,7 +55,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'update'])->name('notifications.read');
 });
 
 Route::get('books', [BookController::class, 'index'])->name('books.index');
