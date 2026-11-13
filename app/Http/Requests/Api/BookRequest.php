@@ -37,7 +37,6 @@ class BookRequest extends FormRequest
             'genres' => ['required', 'array', 'min:1'],
             'description' => ['nullable'],
             'image_url' => ['nullable', 'url', 'max:255'],
-            'user_id' => ['required', 'integer', 'exists:users,id'],
         ];
     }
 
@@ -69,11 +68,6 @@ class BookRequest extends FormRequest
             'image_url.max' => '画像URLは255文字以内で入力してください。',
 
             'published_date.date' => '出版日は有効な日付形式で入力してください。',
-
-            'user_id.required' => '登録者IDは必須です。',
-            'user_id.integer' => '登録者IDは整数で入力してください。',
-            'user_id.exists' => 'そのIDは登録されていません。',
-
         ];
     }
 }

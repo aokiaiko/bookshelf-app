@@ -58,7 +58,7 @@ class BookController extends Controller
             'published_date' => $request->published_date,
             'description' => $request->description,
             'image_url' => $request->image_url,
-            'user_id' => $request->user_id,
+            'user_id' => $request->user()->id,
         ]);
 
         $book->genres()->sync($request->genres);
@@ -85,6 +85,8 @@ class BookController extends Controller
      */
     public function update(BookRequest $request, Book $book): BookResource
     {
+        $this->authorize('update', $book);
+
         $book->update([
             'title' => $request->title,
             'author' => $request->author,
@@ -104,6 +106,8 @@ class BookController extends Controller
      */
     public function destroy(Book $book): Response
     {
+        $this->authorize('delete', $book);
+
         $book->delete();
 
         return response()->noContent();
