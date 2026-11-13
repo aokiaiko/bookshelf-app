@@ -117,6 +117,7 @@ class ReadingPlanController extends Controller
 
         $readingPlan->update([
             'target_date' => $request->target_date,
+            'status' => ReadingPlanStatus::InProgress,
         ]);
 
         return redirect()
