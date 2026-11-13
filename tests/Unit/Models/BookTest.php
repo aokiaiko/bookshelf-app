@@ -4,6 +4,7 @@ namespace Tests\Unit\Models;
 
 use App\Models\Book;
 use App\Models\Genre;
+use App\Models\ReadingPlan;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,7 +32,7 @@ class BookTest extends TestCase
         $this->assertEquals('テスト書籍', $book->title);
         $this->assertEquals('テスト著者', $book->author);
         $this->assertEquals('1234567890123', $book->isbn);
-        $this->assertEquals('2026-10-09', $book->published_date);
+        $this->assertEquals('2026-10-09', $book->published_date->format('Y-m-d'));
         $this->assertEquals('テスト説明', $book->description);
         $this->assertEquals('https://example.com/book.jpg', $book->image_url);
     }
@@ -124,6 +125,23 @@ class BookTest extends TestCase
         $this->assertEquals(
             'book_genres',
             $relation->getTable()
+        );
+    }
+
+    public function test_book_has_many_reading_plans(): void
+    {
+        $book = new Book;
+
+        $relation = $book->readingPlans();
+
+        $this->assertInstanceOf(
+            HasMany::class,
+            $relation
+        );
+
+        $this->assertInstanceOf(
+            ReadingPlan::class,
+            $relation->getRelated()
         );
     }
 }
