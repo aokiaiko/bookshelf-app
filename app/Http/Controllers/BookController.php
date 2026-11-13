@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\Genre;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class BookController extends Controller
@@ -84,17 +85,21 @@ class BookController extends Controller
      */
     public function store(BookRequest $request): RedirectResponse
     {
-        $book = Book::create([
-            'title' => $request->title,
-            'author' => $request->author,
-            'isbn' => $request->isbn,
-            'published_date' => $request->published_date,
-            'description' => $request->description,
-            'image_url' => $request->image_url,
-            'user_id' => auth()->id(),
-        ]);
+        $book = DB::transaction(function () use ($request) {
+            $book = Book::create([
+                'title' => $request->title,
+                'author' => $request->author,
+                'isbn' => $request->isbn,
+                'published_date' => $request->published_date,
+                'description' => $request->description,
+                'image_url' => $request->image_url,
+                'user_id' => auth()->id(),
+            ]);
 
-        $book->genres()->sync($request->genres);
+            $book->genres()->sync($request->genres);
+
+            return $book;
+        });
 
         return redirect()
             ->route('books.show', $book)
@@ -138,16 +143,18 @@ class BookController extends Controller
     {
         $this->authorize('update', $book);
 
-        $book->update([
-            'title' => $request->title,
-            'author' => $request->author,
-            'isbn' => $request->isbn,
-            'published_date' => $request->published_date,
-            'description' => $request->description,
-            'image_url' => $request->image_url,
-        ]);
+        DB::transaction(function () use ($request, $book) {
+            $book->update([
+                'title' => $request->title,
+                'author' => $request->author,
+                'isbn' => $request->isbn,
+                'published_date' => $request->published_date,
+                'description' => $request->description,
+                'image_url' => $request->image_url,
+            ]);
 
-        $book->genres()->sync($request->genres);
+            $book->genres()->sync($request->genres);
+        });
 
         return redirect()
             ->route('books.show', $book)

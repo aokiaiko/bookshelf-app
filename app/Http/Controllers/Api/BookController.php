@@ -10,6 +10,7 @@ use App\Models\Book;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
@@ -51,17 +52,21 @@ class BookController extends Controller
      */
     public function store(BookRequest $request): JsonResponse
     {
-        $book = Book::create([
-            'title' => $request->title,
-            'author' => $request->author,
-            'isbn' => $request->isbn,
-            'published_date' => $request->published_date,
-            'description' => $request->description,
-            'image_url' => $request->image_url,
-            'user_id' => $request->user()->id,
-        ]);
+        $book = DB::transaction(function () use ($request) {
+            $book = Book::create([
+                'title' => $request->title,
+                'author' => $request->author,
+                'isbn' => $request->isbn,
+                'published_date' => $request->published_date,
+                'description' => $request->description,
+                'image_url' => $request->image_url,
+                'user_id' => $request->user()->id,
+            ]);
 
-        $book->genres()->sync($request->genres);
+            $book->genres()->sync($request->genres);
+
+            return $book;
+        });
 
         $book->load('genres');
 
@@ -87,16 +92,18 @@ class BookController extends Controller
     {
         $this->authorize('update', $book);
 
-        $book->update([
-            'title' => $request->title,
-            'author' => $request->author,
-            'isbn' => $request->isbn,
-            'published_date' => $request->published_date,
-            'description' => $request->description,
-            'image_url' => $request->image_url,
-        ]);
+        DB::transaction(function () use ($request, $book) {
+            $book->update([
+                'title' => $request->title,
+                'author' => $request->author,
+                'isbn' => $request->isbn,
+                'published_date' => $request->published_date,
+                'description' => $request->description,
+                'image_url' => $request->image_url,
+            ]);
 
-        $book->genres()->sync($request->genres);
+            $book->genres()->sync($request->genres);
+        });
 
         return new BookResource($book);
     }
