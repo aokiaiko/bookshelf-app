@@ -3,6 +3,7 @@
 namespace Tests\Unit\Models;
 
 use App\Models\Book;
+use App\Models\ReadingPlan;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -146,6 +147,23 @@ class UserTest extends TestCase
         $this->assertEquals(
             'review_likes',
             $relation->getTable()
+        );
+    }
+
+    public function test_user_has_many_reading_plans(): void
+    {
+        $user = new User;
+
+        $relation = $user->readingPlans();
+
+        $this->assertInstanceOf(
+            HasMany::class,
+            $relation
+        );
+
+        $this->assertInstanceOf(
+            ReadingPlan::class,
+            $relation->getRelated()
         );
     }
 }
