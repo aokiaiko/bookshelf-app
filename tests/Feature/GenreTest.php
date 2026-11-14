@@ -86,6 +86,22 @@ class GenreTest extends TestCase
         }
     }
 
+    public function test_genre_show_access_books_index(): void
+    {
+        $user = User::factory()->create();
+        $genre = Genre::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('genres.show', $genre));
+
+        $response->assertStatus(200);
+        $response->assertSee(route('books.index'), false);
+
+        $response = $this->actingAs($user)->get(route('books.index'));
+
+        $response->assertStatus(200);
+
+    }
+
     public function test_guest_cannot_store_genre(): void
     {
         $response = $this->post(route('genres.store'), [
@@ -459,6 +475,17 @@ class GenreTest extends TestCase
 
         $this->get(route('genres.index'))
             ->assertSee('このジャンルには書籍が紐付いているため削除できません。');
+    }
+
+    public function test_genre_destroy_returns_404_when_genre_does_not_exist(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->delete(route('genres.destroy', 99999));
+
+        $response->assertNotFound();
     }
 
     public function test_genre_can_be_deleted_and_displays_success_message(): void
