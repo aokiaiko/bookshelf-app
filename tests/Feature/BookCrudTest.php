@@ -6,6 +6,7 @@ use App\Models\Book;
 use App\Models\Genre;
 use App\Models\Review;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -89,7 +90,7 @@ class BookCrudTest extends TestCase
         $response->assertSee($book->title);
         $response->assertSee($book->author);
         $response->assertSee($book->isbn);
-        $response->assertSee($book->published_date);
+        $response->assertSee($book->published_date->format('Y-m-d'));
         $response->assertSee($book->description);
         $response->assertSee($book->image_url);
 
@@ -158,7 +159,7 @@ class BookCrudTest extends TestCase
         $response->assertSee('value="'.$book->title.'"', false);
         $response->assertSee('value="'.$book->author.'"', false);
         $response->assertSee('value="'.$book->isbn.'"', false);
-        $response->assertSee('value="'.$book->published_date.'"', false);
+        $response->assertSee('value="'.$book->published_date->format('Y-m-d').'"', false);
         $response->assertSee($book->description);
         $response->assertSee('value="'.$book->image_url.'"', false);
 
@@ -741,6 +742,31 @@ class BookCrudTest extends TestCase
         $response->assertSee('タイトルは255文字以内で入力してください。');
     }
 
+    public function test_creation_is_rolled_back_when_genre_sync_fails(): void
+    {
+        $user = User::factory()->create();
+
+        $data = [
+            'title' => '登録用のテスト書籍',
+            'author' => 'テスト著者',
+            'isbn' => '1234567890123',
+            'genres' => [9999],
+        ];
+
+        $this->withoutExceptionHandling();
+
+        try {
+            $this->actingAs($user)
+                ->post(route('books.store'), $data);
+
+            $this->fail('例外が発生しませんでした。');
+        } catch (QueryException $e) {
+            $this->assertDatabaseMissing('books', [
+                'isbn' => '1234567890123',
+            ]);
+        }
+    }
+
     public function test_guest_cannot_update_book(): void
     {
         $book = Book::factory()->create();
@@ -1220,6 +1246,45 @@ class BookCrudTest extends TestCase
         $response = $this->put(route('books.update', 99999));
 
         $response->assertNotFound();
+    }
+
+    public function test_update_is_rolled_back_when_genre_sync_fails(): void
+    {
+        $user = User::factory()->create();
+        $genre = Genre::factory()->create();
+
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+            'title' => '更新前の書籍',
+        ]);
+
+        $book->genres()->attach($genre->id);
+
+        $data = [
+            'title' => '更新後の書籍',
+            'author' => $book->author,
+            'isbn' => $book->isbn,
+            'genres' => [9999],
+        ];
+
+        $this->withoutExceptionHandling();
+
+        try {
+            $this->actingAs($user)
+                ->put(route('books.update', $book), $data);
+
+            $this->fail('例外が発生しませんでした。');
+        } catch (QueryException $e) {
+            $this->assertDatabaseHas('books', [
+                'id' => $book->id,
+                'title' => '更新前の書籍',
+            ]);
+
+            $this->assertDatabaseHas('book_genres', [
+                'book_id' => $book->id,
+                'genre_id' => $genre->id,
+            ]);
+        }
     }
 
     public function test_guest_cannot_delete_book(): void
