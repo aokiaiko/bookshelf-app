@@ -6,7 +6,9 @@ use App\Models\Book;
 use App\Models\Genre;
 use App\Models\Review;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class BookApiTest extends TestCase
@@ -341,21 +343,41 @@ class BookApiTest extends TestCase
         $response->assertNotFound();
     }
 
+    public function test_guest_cannot_store_book(): void
+    {
+
+        $data = [
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
+            'isbn' => '1234567890123',
+            'published_date' => '2026-01-01',
+        ];
+
+        $response = $this->postJson('/api/v1/books', $data);
+
+        $response->assertStatus(401);
+
+        $this->assertDatabaseMissing('books', [
+            'isbn' => '1234567890123',
+        ]);
+    }
+
     public function test_books_store_creates_book(): void
     {
         $user = User::factory()->create();
         $genres = Genre::factory()->count(2)->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
             'isbn' => '9781234567890',
-            'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
+            'published_date' => '2026-01-01T00:00:00.000000Z',
+            'description' => 'テスト書籍です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => $genres->pluck('id')->toArray(),
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -371,6 +393,12 @@ class BookApiTest extends TestCase
 
         $book = Book::where('isbn', $data['isbn'])->firstOrFail();
 
+        $this->assertDatabaseHas('books', [
+            'isbn' => $data['isbn'],
+            'user_id' => $user->id,
+            'published_date' => '2026-01-01',
+        ]);
+
         foreach ($genres as $genre) {
             $this->assertDatabaseHas('book_genres', [
                 'book_id' => $book->id,
@@ -385,14 +413,15 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'author' => '山田太郎',
+            'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -412,15 +441,16 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => ['Laravel入門'],
-            'author' => '山田太郎',
+            'title' => ['テスト書籍'],
+            'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -440,15 +470,16 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
             'title' => str_repeat('a', 256),
-            'author' => '山田太郎',
+            'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -468,14 +499,14 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
+            'title' => 'テスト書籍',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -495,15 +526,16 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => ['山田太郎'],
+            'title' => 'テスト書籍',
+            'author' => ['テスト著者'],
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
+            'description' => 'テスト書籍です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -523,15 +555,16 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
+            'title' => 'テスト書籍',
             'author' => str_repeat('a', 256),
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
+            'description' => 'テスト書籍です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -551,14 +584,15 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
+            'description' => 'テスト書籍です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -576,15 +610,16 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
             'isbn' => ['9781234567890'],
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
+            'description' => 'テスト書籍です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -602,15 +637,16 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
             'isbn' => '978123456789',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -633,15 +669,16 @@ class BookApiTest extends TestCase
         ]);
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
             'isbn' => $book->isbn,
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
+            'description' => 'テスト書籍です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -658,14 +695,15 @@ class BookApiTest extends TestCase
         $user = User::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
+            'description' => 'テスト書籍です。',
             'image_url' => 'https://example.com/book.jpg',
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -685,15 +723,16 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
+            'description' => 'テスト書籍です。',
             'image_url' => 'invalid-url',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -713,15 +752,16 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
+            'description' => 'テスト書籍です。',
             'image_url' => 'https://example.com/'.str_repeat('a', 237),
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -735,48 +775,22 @@ class BookApiTest extends TestCase
         ]);
     }
 
-    public function test_books_store_requires_published_date(): void
-    {
-        $user = User::factory()->create();
-        $genre = Genre::factory()->create();
-
-        $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
-            'isbn' => '9781234567890',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
-            'genres' => [$genre->id],
-        ];
-
-        $response = $this->postJson('/api/v1/books', $data);
-
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors([
-                'published_date' => '出版日は必須です。',
-            ]);
-
-        $this->assertDatabaseMissing('books', [
-            'isbn' => $data['isbn'],
-        ]);
-    }
-
     public function test_books_store_rejects_invalid_published_date(): void
     {
         $user = User::factory()->create();
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => 'invalid-date',
-            'description' => 'Laravelの入門書です。',
+            'description' => 'テスト書籍です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -790,100 +804,21 @@ class BookApiTest extends TestCase
         ]);
     }
 
-    public function test_books_store_requires_user_id(): void
-    {
-        $genre = Genre::factory()->create();
-
-        $data = [
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
-            'isbn' => '9781234567890',
-            'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
-            'genres' => [$genre->id],
-        ];
-
-        $response = $this->postJson('/api/v1/books', $data);
-
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors([
-                'user_id' => '登録者IDは必須です。',
-            ]);
-
-        $this->assertDatabaseMissing('books', [
-            'isbn' => $data['isbn'],
-        ]);
-    }
-
-    public function test_books_store_rejects_non_integer_user_id(): void
-    {
-        $genre = Genre::factory()->create();
-
-        $data = [
-            'user_id' => 'abc',
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
-            'isbn' => '9781234567890',
-            'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
-            'genres' => [$genre->id],
-        ];
-
-        $response = $this->postJson('/api/v1/books', $data);
-
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors([
-                'user_id' => '登録者IDは整数で入力してください。',
-            ]);
-
-        $this->assertDatabaseMissing('books', [
-            'isbn' => $data['isbn'],
-        ]);
-    }
-
-    public function test_books_store_rejects_nonexistent_user_id(): void
-    {
-        $genre = Genre::factory()->create();
-
-        $data = [
-            'user_id' => 99999,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
-            'isbn' => '9781234567890',
-            'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
-            'genres' => [$genre->id],
-        ];
-
-        $response = $this->postJson('/api/v1/books', $data);
-
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors([
-                'user_id' => 'そのIDは登録されていません。',
-            ]);
-
-        $this->assertDatabaseMissing('books', [
-            'isbn' => $data['isbn'],
-        ]);
-    }
-
     public function test_books_store_rejects_non_array_genres(): void
     {
         $user = User::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
+            'description' => 'テスト書籍です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => '1',
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -902,15 +837,16 @@ class BookApiTest extends TestCase
         $user = User::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -930,13 +866,14 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/books', $data);
 
@@ -944,18 +881,100 @@ class BookApiTest extends TestCase
 
         $this->assertDatabaseHas('books', [
             'user_id' => $user->id,
-            'title' => 'Laravel入門',
+            'title' => 'テスト書籍',
             'isbn' => '9781234567890',
             'description' => null,
             'image_url' => null,
         ]);
     }
 
+    public function test_creation_is_rolled_back_when_genre_sync_fails(): void
+    {
+        $user = User::factory()->create();
+
+        $data = [
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
+            'isbn' => '1234567890123',
+            'genres' => [9999],
+        ];
+
+        Sanctum::actingAs($user);
+
+        $this->withoutExceptionHandling();
+
+        try {
+            $this->postJson('/api/v1/books', $data);
+
+            $this->fail('例外が発生しませんでした。');
+        } catch (QueryException $e) {
+            $this->assertDatabaseMissing('books', [
+                'isbn' => '1234567890123',
+            ]);
+        }
+    }
+
     public function test_books_update_returns_404_for_nonexistent_book(): void
     {
+        $user = User::factory()->create();
+
+        Sanctum::actingAs($user);
+
         $response = $this->putJson('/api/v1/books/99999', []);
 
         $response->assertNotFound();
+    }
+
+    public function test_guest_cannot_update_book(): void
+    {
+        $book = Book::factory()->create();
+
+        $data = [
+            'title' => '更新後のテスト書籍',
+            'author' => 'テスト著者',
+            'isbn' => '1234567890123',
+            'published_date' => '2026-01-01',
+        ];
+
+        $response = $this->putJson('/api/v1/books/'.$book->id, $data);
+
+        $response->assertStatus(401);
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+            'title' => $book->title,
+            'isbn' => $book->isbn,
+        ]);
+    }
+
+    public function test_another_user_cannot_update_book(): void
+    {
+        $userA = User::factory()->create();
+        $userB = User::factory()->create();
+        $book = Book::factory()->create([
+            'user_id' => $userA->id,
+        ]);
+        $genre = Genre::factory()->create();
+
+        $data = [
+            'title' => '更新後のテスト書籍',
+            'author' => 'テスト著者',
+            'isbn' => '1234567890123',
+            'published_date' => '2026-01-01',
+            'genres' => [$genre->id],
+        ];
+
+        Sanctum::actingAs($userB);
+
+        $response = $this->putJson('/api/v1/books/'.$book->id, $data);
+
+        $response->assertStatus(403);
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+            'title' => $book->title,
+            'isbn' => $book->isbn,
+        ]);
     }
 
     public function test_books_update_updates_book(): void
@@ -971,15 +990,16 @@ class BookApiTest extends TestCase
         $book->genres()->attach($oldGenre->id);
 
         $updateData = [
-            'user_id' => $user->id,
             'title' => '更新後のタイトル',
             'author' => '更新後の著者',
             'isbn' => '9781234567890',
-            'published_date' => '2026-01-01',
+            'published_date' => '2026-01-01T00:00:00.000000Z',
             'description' => '更新後の説明です。',
             'image_url' => 'https://example.com/updated.jpg',
             'genres' => [$newGenre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->putJson(
             '/api/v1/books/'.$book->id,
@@ -1009,7 +1029,7 @@ class BookApiTest extends TestCase
             'title' => $updateData['title'],
             'author' => $updateData['author'],
             'isbn' => $updateData['isbn'],
-            'published_date' => $updateData['published_date'],
+            'published_date' => '2026-01-01',
             'description' => $updateData['description'],
             'image_url' => $updateData['image_url'],
         ]);
@@ -1036,14 +1056,15 @@ class BookApiTest extends TestCase
         $book->genres()->attach($genre->id);
 
         $data = [
-            'user_id' => $user->id,
-            'author' => '山田太郎',
+            'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
@@ -1078,15 +1099,16 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => ['Laravel書籍'],
-            'author' => '山田太郎',
+            'title' => ['更新後のタイトル'],
+            'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
@@ -1112,15 +1134,16 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
             'title' => str_repeat('あ', 256),
-            'author' => '山田太郎',
+            'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
@@ -1146,14 +1169,15 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'laravel書籍',
+            'title' => '更新後のタイトル',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
@@ -1179,15 +1203,16 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'laravel書籍',
-            'author' => ['テスト著者'],
+            'title' => '更新後のタイトル',
+            'author' => ['更新後の著者'],
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
@@ -1213,8 +1238,7 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'laravel書籍',
+            'title' => '更新後のタイトル',
             'author' => str_repeat('あ', 256),
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
@@ -1222,6 +1246,8 @@ class BookApiTest extends TestCase
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
@@ -1247,14 +1273,15 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'laravel書籍',
-            'author' => 'テスト著者',
+            'title' => '更新後のタイトル',
+            'author' => '更新後の著者',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
@@ -1278,15 +1305,16 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => '更新後のタイトル',
+            'author' => '更新後の著者',
             'isbn' => ['9781234567890'],
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
@@ -1310,15 +1338,17 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => '更新後のタイトル',
+            'author' => '更新後の著者',
             'isbn' => '978123456789',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
+
         $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
         $response->assertUnprocessable()
@@ -1346,15 +1376,16 @@ class BookApiTest extends TestCase
         ]);
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => '更新後のタイトル',
+            'author' => '更新後の著者',
             'isbn' => $bookA->isbn,
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->putJson('/api/v1/books/'.$bookB->id, $data);
 
@@ -1381,19 +1412,17 @@ class BookApiTest extends TestCase
         $book->genres()->attach($genre->id);
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => '更新後のタイトル',
+            'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
         ];
 
-        $response = $this->putJson(
-            '/api/v1/books/'.$book->id,
-            $data
-        );
+        Sanctum::actingAs($user);
+
+        $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors([
@@ -1426,15 +1455,16 @@ class BookApiTest extends TestCase
         $book->genres()->attach($genre->id);
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => '更新後のタイトル',
+            'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
@@ -1467,9 +1497,8 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => '更新後のタイトル',
+            'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
@@ -1477,10 +1506,9 @@ class BookApiTest extends TestCase
             'genres' => [$genre->id],
         ];
 
-        $response = $this->putJson(
-            '/api/v1/books/'.$book->id,
-            $data
-        );
+        Sanctum::actingAs($user);
+
+        $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors([
@@ -1507,9 +1535,8 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => '更新後のタイトル',
+            'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
@@ -1517,10 +1544,9 @@ class BookApiTest extends TestCase
             'genres' => [$genre->id],
         ];
 
-        $response = $this->putJson(
-            '/api/v1/books/'.$book->id,
-            $data
-        );
+        Sanctum::actingAs($user);
+
+        $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors([
@@ -1536,42 +1562,6 @@ class BookApiTest extends TestCase
         ]);
     }
 
-    public function test_books_update_requires_published_date(): void
-    {
-        $user = User::factory()->create();
-
-        $book = Book::factory()->create([
-            'user_id' => $user->id,
-        ]);
-
-        $genre = Genre::factory()->create();
-
-        $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
-            'isbn' => '9781234567890',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
-            'genres' => [$genre->id],
-        ];
-
-        $response = $this->putJson('/api/v1/books/'.$book->id, $data);
-
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors([
-                'published_date' => '出版日は必須です。',
-            ]);
-
-        $this->assertDatabaseHas('books', [
-            'id' => $book->id,
-            'title' => $book->title,
-            'author' => $book->author,
-            'isbn' => $book->isbn,
-            'published_date' => $book->published_date,
-        ]);
-    }
-
     public function test_books_update_rejects_invalid_published_date(): void
     {
         $user = User::factory()->create();
@@ -1583,15 +1573,16 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => '更新後のタイトル',
+            'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => 'invalid-date',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
@@ -1609,116 +1600,6 @@ class BookApiTest extends TestCase
         ]);
     }
 
-    public function test_books_update_requires_user_id(): void
-    {
-        $user = User::factory()->create();
-
-        $book = Book::factory()->create([
-            'user_id' => $user->id,
-        ]);
-
-        $genre = Genre::factory()->create();
-
-        $data = [
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
-            'isbn' => '9781234567890',
-            'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
-            'genres' => [$genre->id],
-        ];
-
-        $response = $this->putJson('/api/v1/books/'.$book->id, $data);
-
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors([
-                'user_id' => '登録者IDは必須です。',
-            ]);
-
-        $this->assertDatabaseHas('books', [
-            'id' => $book->id,
-            'user_id' => $user->id,
-            'title' => $book->title,
-            'author' => $book->author,
-            'isbn' => $book->isbn,
-        ]);
-    }
-
-    public function test_books_update_rejects_non_integer_user_id(): void
-    {
-        $user = User::factory()->create();
-
-        $book = Book::factory()->create([
-            'user_id' => $user->id,
-        ]);
-
-        $genre = Genre::factory()->create();
-
-        $data = [
-            'user_id' => 'abc',
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
-            'isbn' => '9781234567890',
-            'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
-            'genres' => [$genre->id],
-        ];
-
-        $response = $this->putJson('/api/v1/books/'.$book->id, $data);
-
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors([
-                'user_id' => '登録者IDは整数で入力してください。',
-            ]);
-
-        $this->assertDatabaseHas('books', [
-            'id' => $book->id,
-            'user_id' => $user->id,
-            'title' => $book->title,
-            'author' => $book->author,
-            'isbn' => $book->isbn,
-        ]);
-    }
-
-    public function test_books_update_rejects_nonexistent_user_id(): void
-    {
-        $user = User::factory()->create();
-
-        $book = Book::factory()->create([
-            'user_id' => $user->id,
-        ]);
-
-        $genre = Genre::factory()->create();
-
-        $data = [
-            'user_id' => 99999,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
-            'isbn' => '9781234567890',
-            'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
-            'genres' => [$genre->id],
-        ];
-
-        $response = $this->putJson('/api/v1/books/'.$book->id, $data);
-
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors([
-                'user_id' => 'そのIDは登録されていません。',
-            ]);
-
-        $this->assertDatabaseHas('books', [
-            'id' => $book->id,
-            'user_id' => $user->id,
-            'title' => $book->title,
-            'author' => $book->author,
-            'isbn' => $book->isbn,
-        ]);
-    }
-
     public function test_books_update_rejects_non_array_genres(): void
     {
         $user = User::factory()->create();
@@ -1731,15 +1612,16 @@ class BookApiTest extends TestCase
         $book->genres()->attach($genre->id);
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => '更新後のタイトル',
+            'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/book.jpg',
             'genres' => '1',
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
@@ -1773,9 +1655,8 @@ class BookApiTest extends TestCase
         $genre = Genre::factory()->create();
 
         $data = [
-            'user_id' => $user->id,
             'title' => '更新後のタイトル',
-            'author' => '山田太郎',
+            'author' => '更新後の著者',
             'isbn' => $book->isbn,
             'published_date' => '2026-01-01',
             'description' => 'Laravelの入門書です。',
@@ -1783,10 +1664,9 @@ class BookApiTest extends TestCase
             'genres' => [$genre->id],
         ];
 
-        $response = $this->putJson(
-            '/api/v1/books/'.$book->id,
-            $data
-        );
+        Sanctum::actingAs($user);
+
+        $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
         $response->assertOk()
             ->assertJsonFragment([
@@ -1809,20 +1689,22 @@ class BookApiTest extends TestCase
 
         $book = Book::factory()->create([
             'user_id' => $user->id,
+            'published_date' => '2026-11-01',
             'description' => '更新前の説明です。',
             'image_url' => 'https://example.com/old-book.jpg',
         ]);
 
         $data = [
-            'user_id' => $user->id,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
+            'title' => '更新後のタイトル',
+            'author' => '更新後の著者',
             'isbn' => $book->isbn,
-            'published_date' => '2026-01-01',
+            'published_date' => null,
             'description' => null,
             'image_url' => null,
             'genres' => [$genre->id],
         ];
+
+        Sanctum::actingAs($user);
 
         $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
@@ -1830,9 +1712,80 @@ class BookApiTest extends TestCase
 
         $this->assertDatabaseHas('books', [
             'id' => $book->id,
-            'title' => 'Laravel入門',
+            'title' => '更新後のタイトル',
             'description' => null,
             'image_url' => null,
+        ]);
+    }
+
+    public function test_update_is_rolled_back_when_genre_sync_fails(): void
+    {
+        $user = User::factory()->create();
+        $genre = Genre::factory()->create();
+
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+            'title' => '更新前の書籍',
+        ]);
+
+        $book->genres()->attach($genre->id);
+
+        $data = [
+            'title' => '更新後の書籍',
+            'author' => $book->author,
+            'isbn' => $book->isbn,
+            'genres' => [9999],
+        ];
+
+        Sanctum::actingAs($user);
+
+        $this->withoutExceptionHandling();
+
+        try {
+            $response = $this->putJson('/api/v1/books/'.$book->id, $data);
+
+            $this->fail('例外が発生しませんでした。');
+        } catch (QueryException $e) {
+            $this->assertDatabaseHas('books', [
+                'id' => $book->id,
+                'title' => '更新前の書籍',
+            ]);
+
+            $this->assertDatabaseHas('book_genres', [
+                'book_id' => $book->id,
+                'genre_id' => $genre->id,
+            ]);
+        }
+    }
+
+    public function test_guest_cannot_delete_book(): void
+    {
+        $book = Book::factory()->create();
+
+        $response = $this->deleteJson('/api/v1/books/'.$book->id);
+
+        $response->assertStatus(401);
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+        ]);
+    }
+
+    public function test_another_user_cannot_delete_book(): void
+    {
+        $userA = User::factory()->create();
+        $userB = User::factory()->create();
+        $book = Book::factory()->create([
+            'user_id' => $userA->id,
+        ]);
+
+        Sanctum::actingAs($userB);
+
+        $response = $this->deleteJson('/api/v1/books/'.$book->id);
+        $response->assertStatus(403);
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
         ]);
     }
 
@@ -1854,6 +1807,8 @@ class BookApiTest extends TestCase
         $user->likedReviews()->attach($review->id);
 
         $user->favoriteBooks()->attach($book->id);
+
+        Sanctum::actingAs($user);
 
         $response = $this->deleteJson('/api/v1/books/'.$book->id);
 
@@ -1877,6 +1832,11 @@ class BookApiTest extends TestCase
             'review_id' => $review->id,
         ]);
 
+        $this->assertDatabaseMissing('book_genres', [
+            'book_id' => $book->id,
+            'genre_id' => $genre->id,
+        ]);
+
         $this->assertDatabaseHas('genres', [
             'id' => $genre->id,
         ]);
@@ -1884,6 +1844,10 @@ class BookApiTest extends TestCase
 
     public function test_books_destroy_returns_404_for_nonexistent_book(): void
     {
+        $user = User::factory()->create();
+
+        Sanctum::actingAs($user);
+
         $response = $this->deleteJson('/api/v1/books/99999');
 
         $response->assertNotFound();
