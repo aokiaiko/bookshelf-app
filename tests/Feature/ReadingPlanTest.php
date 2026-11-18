@@ -800,4 +800,58 @@ class ReadingPlanTest extends TestCase
             'status' => ReadingPlanStatus::Completed->value,
         ]);
     }
+
+    public function test_reading_plan_status_values(): void
+    {
+        $this->assertEquals(
+            'in_progress',
+            ReadingPlanStatus::InProgress->value
+        );
+
+        $this->assertEquals(
+            'completed',
+            ReadingPlanStatus::Completed->value
+        );
+
+        $this->assertEquals(
+            'overdue',
+            ReadingPlanStatus::Overdue->value
+        );
+    }
+
+    public function test_reading_plan_status_labels(): void
+    {
+        $this->assertEquals(
+            '進行中',
+            ReadingPlanStatus::InProgress->label()
+        );
+
+        $this->assertEquals(
+            '完了',
+            ReadingPlanStatus::Completed->label()
+        );
+
+        $this->assertEquals(
+            '期限切れ',
+            ReadingPlanStatus::Overdue->label()
+        );
+    }
+
+    public function test_reading_plan_status_badge_classes(): void
+    {
+        $this->assertEquals(
+            'bg-blue-100 text-blue-800',
+            ReadingPlanStatus::InProgress->badgeClass()
+        );
+
+        $this->assertEquals(
+            'bg-green-100 text-green-800',
+            ReadingPlanStatus::Completed->badgeClass()
+        );
+
+        $this->assertEquals(
+            'bg-red-100 text-red-800',
+            ReadingPlanStatus::Overdue->badgeClass()
+        );
+    }
 }
