@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ReadingPlanStatus;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -18,13 +19,16 @@ class ReportController extends Controller
         $reviews = $user->reviews()
             ->with('book.genres')
             ->get();
+        $readingPlans = $user->readingPlans()
+            ->where('status', ReadingPlanStatus::Completed)
+            ->get();
         $ratingCounts = $reviews->groupBy('rating')
             ->map(fn ($group) => $group->count());
 
         $stats = [
             'summary' => [
                 'total_reviews' => $reviews->count(),
-                'books_read' => 0,
+                'books_read' => $readingPlans->unique('book_id')->count(),
                 'average_rating' => $reviews->avg('rating') ?? 0,
             ],
             'rating_distribution' => collect(range(1, 5))
