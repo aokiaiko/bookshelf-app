@@ -163,6 +163,68 @@ class BookSortTest extends TestCase
         ]);
     }
 
+    public function test_sort_is_newest_when_created_at_is_same(): void
+    {
+        $date = now();
+
+        $book1 = Book::factory()->create([
+            'title' => 'テスト書籍1',
+            'created_at' => $date,
+        ]);
+
+        $book2 = Book::factory()->create([
+            'title' => 'テスト書籍2',
+            'created_at' => $date,
+        ]);
+
+        $book3 = Book::factory()->create([
+            'title' => 'テスト書籍3',
+            'created_at' => $date,
+        ]);
+
+        $response = $this->get(route('books.index', [
+            'sort' => 'newest',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertSeeInOrder([
+            $book3->title,
+            $book2->title,
+            $book1->title,
+        ]);
+    }
+
+    public function test_sort_is_oldest_when_created_at_is_same(): void
+    {
+        $date = now();
+
+        $book1 = Book::factory()->create([
+            'title' => 'テスト書籍1',
+            'created_at' => $date,
+        ]);
+
+        $book2 = Book::factory()->create([
+            'title' => 'テスト書籍2',
+            'created_at' => $date,
+        ]);
+
+        $book3 = Book::factory()->create([
+            'title' => 'テスト書籍3',
+            'created_at' => $date,
+        ]);
+
+        $response = $this->get(route('books.index', [
+            'sort' => 'oldest',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertSeeInOrder([
+            $book1->title,
+            $book2->title,
+            $book3->title,
+        ]);
+    }
+
     public function test_sort_book_non_rating(): void
     {
         $book3 = Book::factory()->create([

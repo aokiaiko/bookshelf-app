@@ -41,7 +41,8 @@ class BookController extends Controller
 
         switch ($sort) {
             case 'oldest':
-                $bookQuery->orderBy('created_at', 'asc');
+                $bookQuery->orderBy('created_at', 'asc')
+                    ->orderBy('id', 'asc');
                 break;
 
             case 'title':
@@ -55,7 +56,8 @@ class BookController extends Controller
                 break;
 
             default:
-                $bookQuery->orderBy('created_at', 'desc');
+                $bookQuery->orderBy('created_at', 'desc')
+                    ->orderBy('id', 'desc');
                 break;
         }
 
