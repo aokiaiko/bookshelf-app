@@ -564,7 +564,7 @@ class BookCrudTest extends TestCase
 
         $book = Book::where('isbn', '1234567890123')->firstOrFail();
 
-        $this->assertDatabaseHas('book_genres', [
+        $this->assertDatabaseHas('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $genre->id,
         ]);
@@ -896,12 +896,12 @@ class BookCrudTest extends TestCase
             'image_url' => $book->image_url,
         ]);
 
-        $this->assertDatabaseHas('book_genres', [
+        $this->assertDatabaseHas('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $genreA->id,
         ]);
 
-        $this->assertDatabaseMissing('book_genres', [
+        $this->assertDatabaseMissing('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $genreB->id,
         ]);
@@ -964,12 +964,12 @@ class BookCrudTest extends TestCase
             'published_date' => '2026-01-01',
         ]);
 
-        $this->assertDatabaseHas('book_genres', [
+        $this->assertDatabaseHas('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $genreB->id,
         ]);
 
-        $this->assertDatabaseMissing('book_genres', [
+        $this->assertDatabaseMissing('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $genreA->id,
         ]);
@@ -1121,7 +1121,7 @@ class BookCrudTest extends TestCase
             'author' => $book->author,
         ]);
 
-        $this->assertDatabaseHas('book_genres', [
+        $this->assertDatabaseHas('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $genre->id,
         ]);
@@ -1280,7 +1280,7 @@ class BookCrudTest extends TestCase
                 'title' => '更新前の書籍',
             ]);
 
-            $this->assertDatabaseHas('book_genres', [
+            $this->assertDatabaseHas('book_genre', [
                 'book_id' => $book->id,
                 'genre_id' => $genre->id,
             ]);
@@ -1426,7 +1426,7 @@ class BookCrudTest extends TestCase
             'book_id' => $book->id,
         ]);
 
-        $this->assertDatabaseMissing('book_genres', [
+        $this->assertDatabaseMissing('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $genre->id,
 
