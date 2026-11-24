@@ -34,8 +34,9 @@ class BookRequest extends FormRequest
                 Rule::unique('books', 'isbn')->ignore($book?->id),
             ],
             'published_date' => ['nullable', 'date'],
-            'genres' => ['required', 'array', 'min:1'],
-            'description' => ['nullable'],
+            'genres' => ['required', 'array'],
+            'genres.*' => ['exists:genres,id'],
+            'description' => ['nullable', 'string'],
             'image_url' => ['nullable', 'url', 'max:255'],
         ];
     }
@@ -62,7 +63,10 @@ class BookRequest extends FormRequest
             'isbn.unique' => 'そのISBNは既に使用されています。',
 
             'genres.required' => 'ジャンルは1つ以上選択してください。',
-            'genres.min' => 'ジャンルは1つ以上選択してください。',
+            'genres.array' => 'ジャンルは配列で入力してください。',
+            'genres.*.exists' => '選択されたジャンルは存在しません。',
+
+            'description.string' => '説明は文字列で入力してください。',
 
             'image_url.url' => '画像URLは有効なURL形式で入力してください。',
             'image_url.max' => '画像URLは255文字以内で入力してください。',
