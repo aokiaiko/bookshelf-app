@@ -20,7 +20,7 @@ class BookController extends Controller
      */
     public function index(Request $request): View
     {
-        $bookQuery = Book::query();
+        $bookQuery = Book::with('genres');
 
         $keyword = $request->input('keyword');
         if ($keyword) {
