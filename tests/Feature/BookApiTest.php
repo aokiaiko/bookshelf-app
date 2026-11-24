@@ -400,7 +400,7 @@ class BookApiTest extends TestCase
         ]);
 
         foreach ($genres as $genre) {
-            $this->assertDatabaseHas('book_genres', [
+            $this->assertDatabaseHas('book_genre', [
                 'book_id' => $book->id,
                 'genre_id' => $genre->id,
             ]);
@@ -1034,12 +1034,12 @@ class BookApiTest extends TestCase
             'image_url' => $updateData['image_url'],
         ]);
 
-        $this->assertDatabaseHas('book_genres', [
+        $this->assertDatabaseHas('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $newGenre->id,
         ]);
 
-        $this->assertDatabaseMissing('book_genres', [
+        $this->assertDatabaseMissing('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $oldGenre->id,
         ]);
@@ -1084,7 +1084,7 @@ class BookApiTest extends TestCase
             'image_url' => $book->image_url,
         ]);
 
-        $this->assertDatabaseHas('book_genres', [
+        $this->assertDatabaseHas('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $genre->id,
         ]);
@@ -1436,7 +1436,7 @@ class BookApiTest extends TestCase
             'isbn' => $book->isbn,
         ]);
 
-        $this->assertDatabaseHas('book_genres', [
+        $this->assertDatabaseHas('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $genre->id,
         ]);
@@ -1480,7 +1480,7 @@ class BookApiTest extends TestCase
             'isbn' => $book->isbn,
         ]);
 
-        $this->assertDatabaseHas('book_genres', [
+        $this->assertDatabaseHas('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $genre->id,
         ]);
@@ -1636,7 +1636,7 @@ class BookApiTest extends TestCase
             'isbn' => $book->isbn,
         ]);
 
-        $this->assertDatabaseHas('book_genres', [
+        $this->assertDatabaseHas('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $genre->id,
         ]);
@@ -1751,7 +1751,7 @@ class BookApiTest extends TestCase
                 'title' => '更新前の書籍',
             ]);
 
-            $this->assertDatabaseHas('book_genres', [
+            $this->assertDatabaseHas('book_genre', [
                 'book_id' => $book->id,
                 'genre_id' => $genre->id,
             ]);
@@ -1832,7 +1832,7 @@ class BookApiTest extends TestCase
             'review_id' => $review->id,
         ]);
 
-        $this->assertDatabaseMissing('book_genres', [
+        $this->assertDatabaseMissing('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $genre->id,
         ]);

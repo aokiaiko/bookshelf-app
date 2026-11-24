@@ -48,7 +48,7 @@ class GenreTest extends TestCase
         );
 
         $this->assertEquals(
-            'book_genres',
+            'book_genre',
             $relation->getTable()
         );
     }
