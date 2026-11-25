@@ -461,6 +461,30 @@ class BookCrudTest extends TestCase
         ]);
     }
 
+    public function test_book_description_is_not_strings(): void
+    {
+        $user = User::factory()->create();
+        $genre = Genre::factory()->create();
+
+        $data = [
+            'title' => 'テスト本',
+            'author' => 'テスト著者',
+            'isbn' => '1234567890123',
+            'published_date' => '2026-01-01',
+            'genres' => [$genre->id],
+            'description' => ['書籍の説明'],
+        ];
+
+        $response = $this->actingAs($user)
+            ->post(route('books.store'), $data);
+
+        $response->assertSessionHasErrors([
+            'description' => '説明は文字列で入力してください。',
+        ]);
+
+        $this->assertDatabaseCount('books', 0);
+    }
+
     public function test_book_image_url_has_invalid_format(): void
     {
         $user = User::factory()->create();
@@ -674,7 +698,6 @@ class BookCrudTest extends TestCase
     public function test_book_genres_must_be_array(): void
     {
         $user = User::factory()->create();
-        $genre = Genre::factory()->create();
 
         $data = [
             'title' => 'テスト本',
@@ -687,9 +710,33 @@ class BookCrudTest extends TestCase
         $response = $this->actingAs($user)
             ->post(route('books.store'), $data);
 
-        $response->assertStatus(302);
-        $response->assertSessionHasErrors('genres');
+        $response->assertSessionHasErrors([
+            'genres' => 'ジャンルは配列で入力してください。',
+        ]);
 
+        $this->assertDatabaseMissing('books', [
+            'isbn' => '1234567890123',
+        ]);
+    }
+
+    public function test_book_genres_must_exist(): void
+    {
+        $user = User::factory()->create();
+
+        $data = [
+            'title' => 'テスト本',
+            'author' => 'テスト著者',
+            'isbn' => '1234567890123',
+            'published_date' => '2026-01-01',
+            'genres' => [9999],
+        ];
+
+        $response = $this->actingAs($user)
+            ->post(route('books.store'), $data);
+
+        $response->assertSessionHasErrors([
+            'genres.0' => '選択されたジャンルは存在しません。',
+        ]);
         $this->assertDatabaseMissing('books', [
             'isbn' => '1234567890123',
         ]);
@@ -745,24 +792,32 @@ class BookCrudTest extends TestCase
     public function test_creation_is_rolled_back_when_genre_sync_fails(): void
     {
         $user = User::factory()->create();
+        $genre = Genre::factory()->create();
 
         $data = [
             'title' => '登録用のテスト書籍',
             'author' => 'テスト著者',
             'isbn' => '1234567890123',
-            'genres' => [9999],
+            'genres' => [$genre->id],
         ];
 
+        Book::created(function () use ($genre) {
+            $genre->delete();
+        });
         $this->withoutExceptionHandling();
 
         try {
             $this->actingAs($user)
                 ->post(route('books.store'), $data);
 
-            $this->fail('例外が発生しませんでした。');
+            $this->fail('ジャンルの紐付け処理で例外が発生しませんでした。');
         } catch (QueryException $e) {
             $this->assertDatabaseMissing('books', [
                 'isbn' => '1234567890123',
+            ]);
+
+            $this->assertDatabaseHas('genres', [
+                'id' => $genre->id,
             ]);
         }
     }
@@ -923,6 +978,9 @@ class BookCrudTest extends TestCase
             'ISBN13桁以外' => ['isbn', '12345678901234', 'ISBNは13桁で入力してください。'],
 
             'ジャンル未入力' => ['genres', [], 'ジャンルは1つ以上選択してください。'],
+            'ジャンル配列以外' => ['genres', 'テストジャンル', 'ジャンルは配列で入力してください。'],
+
+            '説明文字列以外' => ['description', ['テスト説明'], '説明は文字列で入力してください。'],
 
             '画像URL有効なURL以外' => ['image_url',  '111111', '画像URLは有効なURL形式で入力してください。'],
             '画像URL256文字' => ['image_url', 'https://example.com/'.str_repeat('a', 236), '画像URLは255文字以内で入力してください。'],
@@ -1091,7 +1149,7 @@ class BookCrudTest extends TestCase
         ]);
     }
 
-    public function test_update_book_genres_must_be_array(): void
+    public function test_update_book_genres_must_exist(): void
     {
         $user = User::factory()->create();
         $genre = Genre::factory()->create();
@@ -1106,14 +1164,15 @@ class BookCrudTest extends TestCase
             'title' => 'テスト本',
             'author' => 'テスト著者',
             'isbn' => '1234567890123',
-            'genres' => 'テストジャンル',
+            'genres' => [9999],
         ];
 
         $response = $this->actingAs($user)
             ->put(route('books.update', $book), $data);
 
-        $response->assertStatus(302);
-        $response->assertSessionHasErrors('genres');
+        $response->assertSessionHasErrors([
+            'genres.0' => '選択されたジャンルは存在しません。',
+        ]);
 
         $this->assertDatabaseHas('books', [
             'id' => $book->id,
@@ -1264,8 +1323,12 @@ class BookCrudTest extends TestCase
             'title' => '更新後の書籍',
             'author' => $book->author,
             'isbn' => $book->isbn,
-            'genres' => [9999],
+            'genres' => [$genre->id],
         ];
+
+        Book::updated(function () use ($genre) {
+            $genre->delete();
+        });
 
         $this->withoutExceptionHandling();
 
