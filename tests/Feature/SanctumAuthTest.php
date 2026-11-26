@@ -39,6 +39,7 @@ class SanctumAuthTest extends TestCase
             'title' => 'テスト書籍',
             'author' => 'テスト著者',
             'isbn' => '9781234567890',
+            'published_date' => '2026-01-01',
             'genres' => [$genre->id],
         ];
 
@@ -90,6 +91,7 @@ class SanctumAuthTest extends TestCase
             'title' => '更新後の書籍',
             'author' => '更新後の著者',
             'isbn' => '9781234567890',
+            'published_date' => $book->published_date,
             'genres' => [$genre->id],
         ];
 
@@ -128,6 +130,7 @@ class SanctumAuthTest extends TestCase
             'title' => '更新後の書籍',
             'author' => '更新後の著者',
             'isbn' => $book->isbn,
+            'published_date' => $book->published_date,
             'genres' => [$genre->id],
         ];
 

@@ -416,8 +416,6 @@ class BookApiTest extends TestCase
             'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -445,8 +443,6 @@ class BookApiTest extends TestCase
             'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -474,8 +470,6 @@ class BookApiTest extends TestCase
             'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -502,8 +496,6 @@ class BookApiTest extends TestCase
             'title' => 'テスト書籍',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
         Sanctum::actingAs($user);
@@ -530,8 +522,6 @@ class BookApiTest extends TestCase
             'author' => ['テスト著者'],
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'テスト書籍です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -559,8 +549,6 @@ class BookApiTest extends TestCase
             'author' => str_repeat('a', 256),
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'テスト書籍です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -587,8 +575,6 @@ class BookApiTest extends TestCase
             'title' => 'テスト書籍',
             'author' => 'テスト著者',
             'published_date' => '2026-01-01',
-            'description' => 'テスト書籍です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -614,8 +600,6 @@ class BookApiTest extends TestCase
             'author' => 'テスト著者',
             'isbn' => ['9781234567890'],
             'published_date' => '2026-01-01',
-            'description' => 'テスト書籍です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -641,8 +625,6 @@ class BookApiTest extends TestCase
             'author' => 'テスト著者',
             'isbn' => '978123456789',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -673,8 +655,6 @@ class BookApiTest extends TestCase
             'author' => 'テスト著者',
             'isbn' => $book->isbn,
             'published_date' => '2026-01-01',
-            'description' => 'テスト書籍です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -699,8 +679,6 @@ class BookApiTest extends TestCase
             'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'テスト書籍です。',
-            'image_url' => 'https://example.com/book.jpg',
         ];
 
         Sanctum::actingAs($user);
@@ -727,7 +705,6 @@ class BookApiTest extends TestCase
             'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'テスト書籍です。',
             'image_url' => 'invalid-url',
             'genres' => [$genre->id],
         ];
@@ -756,7 +733,6 @@ class BookApiTest extends TestCase
             'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'テスト書籍です。',
             'image_url' => 'https://example.com/'.str_repeat('a', 237),
             'genres' => [$genre->id],
         ];
@@ -775,6 +751,30 @@ class BookApiTest extends TestCase
         ]);
     }
 
+    public function test_books_store_requires_published_date(): void
+    {
+        $user = User::factory()->create();
+        $genre = Genre::factory()->create();
+
+        $data = [
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
+            'isbn' => '9781234567890',
+            'genres' => [$genre->id],
+        ];
+
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/v1/books', $data);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'published_date' => '出版日は必須です。',
+            ]);
+
+        $this->assertDatabaseCount('books', 0);
+    }
+
     public function test_books_store_rejects_invalid_published_date(): void
     {
         $user = User::factory()->create();
@@ -785,8 +785,6 @@ class BookApiTest extends TestCase
             'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => 'invalid-date',
-            'description' => 'テスト書籍です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -804,6 +802,32 @@ class BookApiTest extends TestCase
         ]);
     }
 
+    public function test_books_store_rejects_non_string_description(): void
+    {
+        $user = User::factory()->create();
+        $genre = Genre::factory()->create();
+
+        $data = [
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
+            'isbn' => '9781234567890',
+            'published_date' => '2026-01-01',
+            'description' => ['テスト用の説明'],
+            'genres' => [$genre->id],
+        ];
+
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/v1/books', $data);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'description' => '説明は文字列で入力してください。',
+            ]);
+
+        $this->assertDatabaseCount('books', 0);
+    }
+
     public function test_books_store_rejects_non_array_genres(): void
     {
         $user = User::factory()->create();
@@ -813,8 +837,6 @@ class BookApiTest extends TestCase
             'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'テスト書籍です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => '1',
         ];
 
@@ -824,7 +846,7 @@ class BookApiTest extends TestCase
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors([
-                'genres',
+                'genres' => 'ジャンルは配列で入力してください。',
             ]);
 
         $this->assertDatabaseMissing('books', [
@@ -841,8 +863,6 @@ class BookApiTest extends TestCase
             'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [],
         ];
 
@@ -853,6 +873,34 @@ class BookApiTest extends TestCase
         $response->assertUnprocessable()
             ->assertJsonValidationErrors([
                 'genres' => 'ジャンルは1つ以上選択してください。',
+            ]);
+
+        $this->assertDatabaseMissing('books', [
+            'isbn' => $data['isbn'],
+        ]);
+    }
+
+    public function test_books_store_rejects_nonexistent_genres(): void
+    {
+        $user = User::factory()->create();
+
+        $genre = Genre::factory()->create();
+
+        $data = [
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
+            'isbn' => '9781234567890',
+            'published_date' => '2026-01-01',
+            'genres' => [9999],
+        ];
+
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/v1/books', $data);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'genres.0' => '選択されたジャンルは存在しません。',
             ]);
 
         $this->assertDatabaseMissing('books', [
@@ -891,13 +939,19 @@ class BookApiTest extends TestCase
     public function test_creation_is_rolled_back_when_genre_sync_fails(): void
     {
         $user = User::factory()->create();
+        $genre = Genre::factory()->create();
 
         $data = [
             'title' => 'テスト書籍',
             'author' => 'テスト著者',
             'isbn' => '1234567890123',
-            'genres' => [9999],
+            'published_date' => '2026-01-01',
+            'genres' => [$genre->id],
         ];
+
+        Book::created(function () use ($genre) {
+            $genre->delete();
+        });
 
         Sanctum::actingAs($user);
 
@@ -910,6 +964,10 @@ class BookApiTest extends TestCase
         } catch (QueryException $e) {
             $this->assertDatabaseMissing('books', [
                 'isbn' => '1234567890123',
+            ]);
+
+            $this->assertDatabaseHas('genres', [
+                'id' => $genre->id,
             ]);
         }
     }
@@ -1059,8 +1117,6 @@ class BookApiTest extends TestCase
             'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -1080,8 +1136,6 @@ class BookApiTest extends TestCase
             'author' => $book->author,
             'isbn' => $book->isbn,
             'published_date' => $book->published_date,
-            'description' => $book->description,
-            'image_url' => $book->image_url,
         ]);
 
         $this->assertDatabaseHas('book_genre', [
@@ -1103,8 +1157,6 @@ class BookApiTest extends TestCase
             'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -1138,8 +1190,6 @@ class BookApiTest extends TestCase
             'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -1172,8 +1222,6 @@ class BookApiTest extends TestCase
             'title' => '更新後のタイトル',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -1207,8 +1255,6 @@ class BookApiTest extends TestCase
             'author' => ['更新後の著者'],
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -1242,8 +1288,6 @@ class BookApiTest extends TestCase
             'author' => str_repeat('あ', 256),
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -1276,8 +1320,6 @@ class BookApiTest extends TestCase
             'title' => '更新後のタイトル',
             'author' => '更新後の著者',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -1309,8 +1351,6 @@ class BookApiTest extends TestCase
             'author' => '更新後の著者',
             'isbn' => ['9781234567890'],
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -1342,8 +1382,6 @@ class BookApiTest extends TestCase
             'author' => '更新後の著者',
             'isbn' => '978123456789',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -1380,8 +1418,6 @@ class BookApiTest extends TestCase
             'author' => '更新後の著者',
             'isbn' => $bookA->isbn,
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -1416,8 +1452,6 @@ class BookApiTest extends TestCase
             'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
         ];
 
         Sanctum::actingAs($user);
@@ -1459,8 +1493,6 @@ class BookApiTest extends TestCase
             'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [],
         ];
 
@@ -1475,6 +1507,90 @@ class BookApiTest extends TestCase
 
         $this->assertDatabaseHas('books', [
             'id' => $book->id,
+            'title' => $book->title,
+            'author' => $book->author,
+            'isbn' => $book->isbn,
+        ]);
+
+        $this->assertDatabaseHas('book_genre', [
+            'book_id' => $book->id,
+            'genre_id' => $genre->id,
+        ]);
+    }
+
+    public function test_books_update_rejects_non_array_genres(): void
+    {
+        $user = User::factory()->create();
+
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+        ]);
+
+        $genre = Genre::factory()->create();
+        $book->genres()->attach($genre->id);
+
+        $data = [
+            'title' => '更新後のタイトル',
+            'author' => '更新後の著者',
+            'isbn' => '9781234567890',
+            'published_date' => '2026-01-01',
+            'genres' => '1',
+        ];
+
+        Sanctum::actingAs($user);
+
+        $response = $this->putJson('/api/v1/books/'.$book->id, $data);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'genres' => 'ジャンルは配列で入力してください。',
+            ]);
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+            'user_id' => $user->id,
+            'title' => $book->title,
+            'author' => $book->author,
+            'isbn' => $book->isbn,
+        ]);
+
+        $this->assertDatabaseHas('book_genre', [
+            'book_id' => $book->id,
+            'genre_id' => $genre->id,
+        ]);
+    }
+
+    public function test_books_update_rejects_nonexistent_genres(): void
+    {
+        $user = User::factory()->create();
+
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+        ]);
+
+        $genre = Genre::factory()->create();
+        $book->genres()->attach($genre->id);
+
+        $data = [
+            'title' => '更新後のタイトル',
+            'author' => '更新後の著者',
+            'isbn' => '9781234567890',
+            'published_date' => '2026-01-01',
+            'genres' => [9999],
+        ];
+
+        Sanctum::actingAs($user);
+
+        $response = $this->putJson('/api/v1/books/'.$book->id, $data);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'genres.0' => '選択されたジャンルは存在しません。',
+            ]);
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+            'user_id' => $user->id,
             'title' => $book->title,
             'author' => $book->author,
             'isbn' => $book->isbn,
@@ -1501,7 +1617,6 @@ class BookApiTest extends TestCase
             'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
             'image_url' => 'invalid-url',
             'genres' => [$genre->id],
         ];
@@ -1539,7 +1654,6 @@ class BookApiTest extends TestCase
             'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
             'image_url' => 'https://example.com/'.str_repeat('a', 237),
             'genres' => [$genre->id],
         ];
@@ -1562,6 +1676,36 @@ class BookApiTest extends TestCase
         ]);
     }
 
+    public function test_books_update_requires_published_date(): void
+    {
+        $user = User::factory()->create();
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+        ]);
+        $genre = Genre::factory()->create();
+
+        $data = [
+            'title' => '更新後のタイトル',
+            'author' => '更新後の著者',
+            'isbn' => $book->isbn,
+            'genres' => [$genre->id],
+        ];
+
+        Sanctum::actingAs($user);
+
+        $response = $this->putJson('/api/v1/books/'.$book->id, $data);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'published_date' => '出版日は必須です。',
+            ]);
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+            'isbn' => $book->isbn,
+        ]);
+    }
+
     public function test_books_update_rejects_invalid_published_date(): void
     {
         $user = User::factory()->create();
@@ -1577,8 +1721,6 @@ class BookApiTest extends TestCase
             'author' => '更新後の著者',
             'isbn' => '9781234567890',
             'published_date' => 'invalid-date',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -1600,7 +1742,7 @@ class BookApiTest extends TestCase
         ]);
     }
 
-    public function test_books_update_rejects_non_array_genres(): void
+    public function test_books_update_rejects_non_string_description(): void
     {
         $user = User::factory()->create();
 
@@ -1609,16 +1751,14 @@ class BookApiTest extends TestCase
         ]);
 
         $genre = Genre::factory()->create();
-        $book->genres()->attach($genre->id);
 
         $data = [
-            'title' => '更新後のタイトル',
-            'author' => '更新後の著者',
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
             'isbn' => '9781234567890',
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
-            'genres' => '1',
+            'description' => ['テスト用の説明'],
+            'genres' => [$genre->id],
         ];
 
         Sanctum::actingAs($user);
@@ -1626,19 +1766,16 @@ class BookApiTest extends TestCase
         $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['genres']);
+            ->assertJsonValidationErrors([
+                'description' => '説明は文字列で入力してください。',
+            ]);
 
         $this->assertDatabaseHas('books', [
             'id' => $book->id,
-            'user_id' => $user->id,
             'title' => $book->title,
             'author' => $book->author,
             'isbn' => $book->isbn,
-        ]);
-
-        $this->assertDatabaseHas('book_genre', [
-            'book_id' => $book->id,
-            'genre_id' => $genre->id,
+            'published_date' => $book->published_date,
         ]);
     }
 
@@ -1659,8 +1796,6 @@ class BookApiTest extends TestCase
             'author' => '更新後の著者',
             'isbn' => $book->isbn,
             'published_date' => '2026-01-01',
-            'description' => 'Laravelの入門書です。',
-            'image_url' => 'https://example.com/book.jpg',
             'genres' => [$genre->id],
         ];
 
@@ -1698,7 +1833,7 @@ class BookApiTest extends TestCase
             'title' => '更新後のタイトル',
             'author' => '更新後の著者',
             'isbn' => $book->isbn,
-            'published_date' => null,
+            'published_date' => '2026-01-01',
             'description' => null,
             'image_url' => null,
             'genres' => [$genre->id],
@@ -1734,8 +1869,13 @@ class BookApiTest extends TestCase
             'title' => '更新後の書籍',
             'author' => $book->author,
             'isbn' => $book->isbn,
-            'genres' => [9999],
+            'published_date' => $book->published_date,
+            'genres' => [$genre->id],
         ];
+
+        Book::updated(function () use ($genre) {
+            $genre->delete();
+        });
 
         Sanctum::actingAs($user);
 
