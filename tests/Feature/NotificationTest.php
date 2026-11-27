@@ -57,7 +57,7 @@ class NotificationTest extends TestCase
             'book_id' => Book::factory()->create([
                 'title' => 'テスト書籍C',
             ])->id,
-            'status' => ReadingPlanStatus::Overdue,
+            'status' => ReadingPlanStatus::Expired,
             'target_date' => now()->subDays(3)->toDateString(),
         ]);
 

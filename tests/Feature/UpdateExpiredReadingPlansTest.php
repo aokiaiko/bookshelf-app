@@ -8,23 +8,23 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class UpdateOverdueReadingPlansTest extends TestCase
+class UpdateExpiredReadingPlansTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_overdue_reading_plan_is_updated(): void
+    public function test_expired_reading_plan_is_updated(): void
     {
         $readingPlan = ReadingPlan::factory()->create([
             'status' => ReadingPlanStatus::InProgress,
             'target_date' => now()->subDay()->toDateString(),
         ]);
 
-        $this->artisan('app:update-overdue-reading-plans')
+        $this->artisan('reading-plans:update-expired')
             ->assertExitCode(0);
 
         $this->assertDatabaseHas('reading_plans', [
             'id' => $readingPlan->id,
-            'status' => ReadingPlanStatus::Overdue->value,
+            'status' => ReadingPlanStatus::Expired->value,
         ]);
     }
 
@@ -35,7 +35,7 @@ class UpdateOverdueReadingPlansTest extends TestCase
             'target_date' => now()->toDateString(),
         ]);
 
-        $this->artisan('app:update-overdue-reading-plans')
+        $this->artisan('reading-plans:update-expired')
             ->assertExitCode(0);
 
         $this->assertDatabaseHas('reading_plans', [
@@ -51,7 +51,7 @@ class UpdateOverdueReadingPlansTest extends TestCase
             'target_date' => now()->addDay()->toDateString(),
         ]);
 
-        $this->artisan('app:update-overdue-reading-plans')
+        $this->artisan('reading-plans:update-expired')
             ->assertExitCode(0);
 
         $this->assertDatabaseHas('reading_plans', [
@@ -67,7 +67,7 @@ class UpdateOverdueReadingPlansTest extends TestCase
             'target_date' => now()->subDay()->toDateString(),
         ]);
 
-        $this->artisan('app:update-overdue-reading-plans')
+        $this->artisan('reading-plans:update-expired')
             ->assertExitCode(0);
 
         $this->assertDatabaseHas('reading_plans', [
@@ -83,7 +83,7 @@ class UpdateOverdueReadingPlansTest extends TestCase
         $event = collect($schedule->events())
             ->first(fn ($event) => str_contains(
                 $event->command ?? '',
-                'app:update-overdue-reading-plans'
+                'reading-plans:update-expired'
             ));
 
         $this->assertNotNull($event);

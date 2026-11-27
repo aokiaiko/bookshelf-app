@@ -76,7 +76,7 @@ class ReadingPlanTest extends TestCase
             ]),
             ReadingPlan::factory()->create([
                 'user_id' => $user->id,
-                'status' => ReadingPlanStatus::Overdue,
+                'status' => ReadingPlanStatus::Expired,
                 'target_date' => now()->subDays(3),
             ]),
         ]);
@@ -140,7 +140,7 @@ class ReadingPlanTest extends TestCase
         $readingPlan3 = ReadingPlan::factory()->create([
             'user_id' => $user->id,
             'book_id' => $book3->id,
-            'status' => ReadingPlanStatus::Overdue,
+            'status' => ReadingPlanStatus::Expired,
             'target_date' => now()->subDays(3),
         ]);
 
@@ -452,7 +452,7 @@ class ReadingPlanTest extends TestCase
         $this->assertDatabaseCount('reading_plans', 2);
     }
 
-    public function test_can_create_reading_plan_for_book_with_overdue_plan(): void
+    public function test_can_create_reading_plan_for_book_with_expired_plan(): void
     {
         $user = User::factory()->create();
 
@@ -463,7 +463,7 @@ class ReadingPlanTest extends TestCase
         ReadingPlan::factory()->create([
             'user_id' => $user->id,
             'book_id' => $book->id,
-            'status' => ReadingPlanStatus::Overdue,
+            'status' => ReadingPlanStatus::Expired,
             'target_date' => now()->subDays(3)->toDateString(),
         ]);
 
@@ -756,13 +756,13 @@ class ReadingPlanTest extends TestCase
         ]);
     }
 
-    public function test_owner_can_complete_overdue_reading_plan(): void
+    public function test_owner_can_complete_expired_reading_plan(): void
     {
         $user = User::factory()->create();
 
         $readingPlan = ReadingPlan::factory()->create([
             'user_id' => $user->id,
-            'status' => ReadingPlanStatus::Overdue,
+            'status' => ReadingPlanStatus::Expired,
             'target_date' => now()->subDays(3)->toDateString(),
         ]);
 
@@ -815,8 +815,8 @@ class ReadingPlanTest extends TestCase
         );
 
         $this->assertEquals(
-            'overdue',
-            ReadingPlanStatus::Overdue->value
+            'expired',
+            ReadingPlanStatus::Expired->value
         );
     }
 
@@ -834,7 +834,7 @@ class ReadingPlanTest extends TestCase
 
         $this->assertEquals(
             '期限切れ',
-            ReadingPlanStatus::Overdue->label()
+            ReadingPlanStatus::Expired->label()
         );
     }
 
@@ -852,7 +852,7 @@ class ReadingPlanTest extends TestCase
 
         $this->assertEquals(
             'bg-red-100 text-red-800',
-            ReadingPlanStatus::Overdue->badgeClass()
+            ReadingPlanStatus::Expired->badgeClass()
         );
     }
 }

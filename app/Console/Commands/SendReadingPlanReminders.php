@@ -16,7 +16,7 @@ class SendReadingPlanReminders extends Command
      *
      * @var string
      */
-    protected $signature = 'app:send-reading-plan-reminders';
+    protected $signature = 'reading-plans:send-reminders';
 
     /**
      * コマンドの説明
