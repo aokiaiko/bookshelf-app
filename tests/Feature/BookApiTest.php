@@ -340,7 +340,8 @@ class BookApiTest extends TestCase
     {
         $response = $this->getJson('/api/v1/books/99999');
 
-        $response->assertNotFound();
+        $response->assertStatus(404);
+        $response->assertExactJson(['error' => '書籍が見つかりませんでした。']);
     }
 
     public function test_guest_cannot_store_book(): void
@@ -980,7 +981,8 @@ class BookApiTest extends TestCase
 
         $response = $this->putJson('/api/v1/books/99999', []);
 
-        $response->assertNotFound();
+        $response->assertStatus(404);
+        $response->assertExactJson(['error' => '書籍が見つかりませんでした。']);
     }
 
     public function test_guest_cannot_update_book(): void
@@ -1027,6 +1029,7 @@ class BookApiTest extends TestCase
         $response = $this->putJson('/api/v1/books/'.$book->id, $data);
 
         $response->assertStatus(403);
+        $response->assertExactJson(['error' => 'この操作を実行する権限がありません。']);
 
         $this->assertDatabaseHas('books', [
             'id' => $book->id,
@@ -1922,8 +1925,9 @@ class BookApiTest extends TestCase
         Sanctum::actingAs($userB);
 
         $response = $this->deleteJson('/api/v1/books/'.$book->id);
-        $response->assertStatus(403);
 
+        $response->assertStatus(403);
+        $response->assertExactJson(['error' => 'この操作を実行する権限がありません。']);
         $this->assertDatabaseHas('books', [
             'id' => $book->id,
         ]);
@@ -1990,6 +1994,7 @@ class BookApiTest extends TestCase
 
         $response = $this->deleteJson('/api/v1/books/99999');
 
-        $response->assertNotFound();
+        $response->assertStatus(404);
+        $response->assertExactJson(['error' => '書籍が見つかりませんでした。']);
     }
 }
