@@ -39,12 +39,12 @@ class ReadingPlanTargetDateTest extends TestCase
         ]);
     }
 
-    public function test_owner_can_update_overdue_reading_plan_target_date(): void
+    public function test_owner_can_update_expired_reading_plan_target_date(): void
     {
         $user = User::factory()->create();
         $readingPlan = ReadingPlan::factory()->create([
             'user_id' => $user->id,
-            'status' => ReadingPlanStatus::Overdue,
+            'status' => ReadingPlanStatus::Expired,
             'target_date' => now()->subDays(3)->toDateString(),
         ]);
 
@@ -65,7 +65,7 @@ class ReadingPlanTargetDateTest extends TestCase
         ]);
     }
 
-    public function test_owner_cannot_update_overdue_reading_plan_when_in_progress_plan_exists(): void
+    public function test_owner_cannot_update_expired_reading_plan_when_in_progress_plan_exists(): void
     {
         $user = User::factory()->create();
         $book = Book::factory()->create();
@@ -79,7 +79,7 @@ class ReadingPlanTargetDateTest extends TestCase
         $readingPlanB = ReadingPlan::factory()->create([
             'user_id' => $user->id,
             'book_id' => $book->id,
-            'status' => ReadingPlanStatus::Overdue,
+            'status' => ReadingPlanStatus::Expired,
             'target_date' => now()->subDays(3)->toDateString(),
         ]);
 
@@ -99,7 +99,7 @@ class ReadingPlanTargetDateTest extends TestCase
         $this->assertDatabaseHas('reading_plans', [
             'id' => $readingPlanB->id,
             'target_date' => $readingPlanB->target_date->toDateString(),
-            'status' => ReadingPlanStatus::Overdue->value,
+            'status' => ReadingPlanStatus::Expired->value,
         ]);
     }
 
@@ -347,7 +347,7 @@ class ReadingPlanTargetDateTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function test_owner_can_update_overdue_reading_plan_when_other_user_has_in_progress_plan(): void
+    public function test_owner_can_update_expired_reading_plan_when_other_user_has_in_progress_plan(): void
     {
         $userA = User::factory()->create();
         $userB = User::factory()->create();
@@ -362,7 +362,7 @@ class ReadingPlanTargetDateTest extends TestCase
         $readingPlanB = ReadingPlan::factory()->create([
             'user_id' => $userB->id,
             'book_id' => $book->id,
-            'status' => ReadingPlanStatus::Overdue,
+            'status' => ReadingPlanStatus::Expired,
             'target_date' => now()->subDays(3)->toDateString(),
         ]);
 
@@ -384,7 +384,7 @@ class ReadingPlanTargetDateTest extends TestCase
         ]);
     }
 
-    public function test_owner_can_update_overdue_reading_plan_when_completed_plan_exists(): void
+    public function test_owner_can_update_expired_reading_plan_when_completed_plan_exists(): void
     {
         $user = User::factory()->create();
         $book = Book::factory()->create();
@@ -398,7 +398,7 @@ class ReadingPlanTargetDateTest extends TestCase
         $readingPlan = ReadingPlan::factory()->create([
             'user_id' => $user->id,
             'book_id' => $book->id,
-            'status' => ReadingPlanStatus::Overdue,
+            'status' => ReadingPlanStatus::Expired,
             'target_date' => now()->subDays(3)->toDateString(),
         ]);
 

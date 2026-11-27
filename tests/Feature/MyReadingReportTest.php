@@ -368,7 +368,7 @@ class MyReadingReportTest extends TestCase
 
         ReadingPlan::factory()->create([
             'user_id' => $user->id,
-            'status' => ReadingPlanStatus::Overdue,
+            'status' => ReadingPlanStatus::Expired,
         ]);
 
         $response = $this->actingAs($user)->get(route('reports.index'));

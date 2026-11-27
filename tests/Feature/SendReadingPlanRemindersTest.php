@@ -23,7 +23,7 @@ class SendReadingPlanRemindersTest extends TestCase
             'target_date' => now()->addDays(3)->toDateString(),
         ]);
 
-        $this->artisan('app:send-reading-plan-reminders')
+        $this->artisan('reading-plans:send-reminders')
             ->assertExitCode(0);
 
         $this->assertDatabaseCount('notifications', 1);
@@ -51,7 +51,7 @@ class SendReadingPlanRemindersTest extends TestCase
             'target_date' => now()->toDateString(),
         ]);
 
-        $this->artisan('app:send-reading-plan-reminders')
+        $this->artisan('reading-plans:send-reminders')
             ->assertExitCode(0);
 
         $this->assertDatabaseCount('notifications', 1);
@@ -75,11 +75,11 @@ class SendReadingPlanRemindersTest extends TestCase
 
         $readingPlan = ReadingPlan::factory()->create([
             'user_id' => $user->id,
-            'status' => ReadingPlanStatus::Overdue,
+            'status' => ReadingPlanStatus::Expired,
             'target_date' => now()->subDays(3)->toDateString(),
         ]);
 
-        $this->artisan('app:send-reading-plan-reminders')
+        $this->artisan('reading-plans:send-reminders')
             ->assertExitCode(0);
 
         $this->assertDatabaseCount('notifications', 1);
@@ -109,7 +109,7 @@ class SendReadingPlanRemindersTest extends TestCase
             ]);
         }
 
-        $this->artisan('app:send-reading-plan-reminders')
+        $this->artisan('reading-plans:send-reminders')
             ->assertExitCode(0);
 
         $this->assertDatabaseCount('notifications', 0);
@@ -125,7 +125,7 @@ class SendReadingPlanRemindersTest extends TestCase
             'target_date' => now()->toDateString(),
         ]);
 
-        $this->artisan('app:send-reading-plan-reminders')
+        $this->artisan('reading-plans:send-reminders')
             ->assertExitCode(0);
 
         $this->assertDatabaseCount('notifications', 0);
@@ -148,7 +148,7 @@ class SendReadingPlanRemindersTest extends TestCase
             'target_date' => now()->toDateString(),
         ]);
 
-        $this->artisan('app:send-reading-plan-reminders')
+        $this->artisan('reading-plans:send-reminders')
             ->assertExitCode(0);
 
         $this->assertDatabaseCount('notifications', 2);
@@ -171,7 +171,7 @@ class SendReadingPlanRemindersTest extends TestCase
         $event = collect($schedule->events())
             ->first(fn ($event) => str_contains(
                 $event->command ?? '',
-                'app:send-reading-plan-reminders'
+                'reading-plans:send-reminders'
             ));
 
         $this->assertNotNull($event);
